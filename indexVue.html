@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Seny - Gestor documental</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.1/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+</head>
+<body>
+
+  <div id="app">
+
+    <input type="text" v-model='nombre'>
+
+    <textarea id="sintomas" cols="30" rows="10" required placeholder="¿Cuándo tengo que aplicar este documento?"></textarea>
+
+
+
+    {{nombre}}
+
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <script>
+
+    var sintomas = new SimpleMDE({ element: document.getElementById("sintomas"), spellChecker: false });
+  
+    new Vue({
+      el: '#app',
+      data: {
+        nombre: 'juanra'
+      }
+    });
+
+  </script>
+
+</body>
+</html>
