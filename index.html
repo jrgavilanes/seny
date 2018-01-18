@@ -13,6 +13,13 @@
     <link rel="stylesheet" href="/css/skeleton.css"> -->
   <link rel="stylesheet" href="/css/mi-markdown.css">
   <style>
+    @media print {
+      .no-print,
+      .no-print * {
+        display: none !important;
+      }
+    }
+
     .tag {
       margin: .2em;
     }
@@ -102,19 +109,10 @@
       </div> -->
 
         <div class="block" id="tablon">
-
-
-
-
-
-
-
-
-
         </div>
 
         <a href="#" id="getDocumentos_add" class="float">
-          <i class="fa fa-plus" style="margin-top: 1em; font-size: 1.3em;;"></i>
+          <i class="fa fa-plus" style="margin-top: 1em; font-size: 1.3em;"></i>
         </a>
 
       </div>
@@ -122,6 +120,75 @@
 
     </div>
     <!-- getDocumentos -->
+
+
+
+    <div id="getDocumento" class="invisible">
+
+      <section class="hero is-info no-print">
+        <div class="hero-body">
+          <div class="container">
+            <h1 class="title">
+              <a href="#" title="Volver" onclick="cargaPantalla('getDocumentos');return false;">
+                <i class="fa fa-hand-spock-o" aria-hidden="true"></i>
+                <i>Seny</i>
+              </a>
+            </h1>
+            <h2 class="subtitle" style="margin-top: .1em;">
+              Mostrar documento
+
+            </h2>
+          </div>
+        </div>
+      </section>
+
+      <div class="container">
+
+
+
+        <div id="markdown" style="margin: .5em;">
+
+
+
+          <strong>
+            <span class="is-size-4">Título: </span>
+          </strong>
+          <span id="getDocumento_titulo"></span>
+          <br>
+          <strong>
+            <span class="is-size-4">Incidencia/s: </span>
+          </strong>
+          <span id="getDocumento_incidencias"></span>
+          <br>
+          <strong>
+            <span class="is-size-4">Etiqueta/s: </span>
+          </strong>
+          <span id="getDocumento_etiquetas"></span>
+          <br>
+          <strong>
+            <span class="is-size-4">Síntomas: </span>
+          </strong>
+          <p id="getDocumento_sintomas"></p>
+          <strong>
+            <span class="is-size-4">Procedimiento: </span>
+          </strong>
+          <p id="getDocumento_solucion"></p>
+
+        </div>
+        <!-- markdown -->
+
+        <br>
+        <p class="control" style="margin: .5em;">
+          <a class="button is-blue no-print " href="" onclick="cargaPantalla('getDocumentos');return false;">
+            Volver
+          </a>
+        </p>
+
+      </div>
+      <!-- container -->
+
+    </div>
+    <!-- getDocumento -->
 
 
 
@@ -225,312 +292,340 @@
         </div>
 
       </div>
-      <!-- postDocumento ->
+      <!-- postDocumento -->
 
 
-
-
-
-    </div> <!-- container -->
 
 
 
     </div>
-    <!-- app -->
+    <!-- container -->
 
 
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
-    <script>
-
-
-      // FAKE data
-      var etiquetas = ['tema-1', 'tema-2', 'tema-3', 'otra-cosa'];
-      var registros = [
-        {
-          "incidencias": "17R06396",
-          "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
-          "solucion": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nribnsec.rib.mercadona.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsudo -i -u urgentes\n. j-ir.sh alp\ncd inci_silo\nebdp\n```\n\n",
-          "titulo": "Cancelar orden de entrada SILO",
-          "etiquetas": ["mga", "silo", "recepción"]
-        },
-        {
-          "incidencias": "17R06396",
-          "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
-          "solucion": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nribnsec.rib.mercadona.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsudo -i -u urgentes\n. j-ir.sh alp\ncd inci_silo\nebdp\n```\n\n",
-          "titulo": "Cancelar orden de entrada SILO 2",
-          "etiquetas": ["mga", "silo", "recepción"]
-        },
-        {
-          "incidencias": "17R06396",
-          "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
-          "solucion": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nribnsec.rib.mercadona.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsudo -i -u urgentes\n. j-ir.sh alp\ncd inci_silo\nebdp\n```\n\n",
-          "titulo": "Cancelar orden de entrada SILO 3",
-          "etiquetas": ["mga", "silo", "recepción"]
-        }
-      ];
-      var bd = {};
-
-      bd.registros = registros;
-      bd.etiquetas = etiquetas;
-
-      // const ItemController = (function(){
-      //   console.log('item controller');
-      // })();
-
-      // const UIController = (function(){
-      //   console.log('UI controller');
-      // })();
-
-      // const AppController = (function(){
-      //   console.log('App controller');
-      // })();
+  </div>
+  <!-- app -->
 
 
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+  <script>
+
+
+    // FAKE data
+    var etiquetas = ['tema-1', 'tema-2', 'tema-3', 'otra-cosa'];
+    var registros = [
+      {
+        "incidencias": "17R06396",
+        "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
+        "solucion": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nribnsec.rib.mercadona.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsudo -i -u urgentes\n. j-ir.sh alp\ncd inci_silo\nebdp\n```\n\n",
+        "titulo": "Cancelar orden de entrada SILO",
+        "etiquetas": ["mga", "silo", "recepción"]
+      },
+      {
+        "incidencias": "17R06396",
+        "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
+        "solucion": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nribnsec.rib.mercadona.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsudo -i -u urgentes\n. j-ir.sh alp\ncd inci_silo\nebdp\n```\n\n",
+        "titulo": "Cancelar orden de entrada SILO 2",
+        "etiquetas": ["mga", "silo", "recepción"]
+      },
+      {
+        "incidencias": "17R06396",
+        "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
+        "solucion": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nribnsec.rib.mercadona.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsudo -i -u urgentes\n. j-ir.sh alp\ncd inci_silo\nebdp\n```\n\n",
+        "titulo": "Cancelar orden de entrada SILO 3",
+        "etiquetas": ["mga", "silo", "recepción"]
+      }
+    ];
+    var bd = {};
+
+    bd.registros = registros;
+    bd.etiquetas = etiquetas;
+
+    // const ItemController = (function(){
+    //   console.log('item controller');
+    // })();
+
+    // const UIController = (function(){
+    //   console.log('UI controller');
+    // })();
+
+    // const AppController = (function(){
+    //   console.log('App controller');
+    // })();
 
 
 
 
-      // Elementos UI
-
-      // Pantallas
-
-      var getDocumentos = document.querySelector("#getDocumentos");
-
-      var getDocumentos_add = document.querySelector("#getDocumentos_add");
-
-      getDocumentos_add.addEventListener('click', (e) => {
-        e.preventDefault();
-        cargaPantalla("postDocumento");
-
-      });
 
 
-      var postDocumento = document.querySelector("#postDocumento");
 
-      var tituloInput = document.querySelector("#titulo");
-      var msgBox = document.querySelector("#msgBox");
-      var indicenciasInput = document.querySelector("#indicencias");
-      var etiquetas = document.querySelector("#etiquetas");
-      var etiquetero = document.querySelector("#etiquetero");
+    // Elementos UI
 
-      var tablon = document.querySelector("#tablon");
+    // Pantallas
 
-      var sintomas = new SimpleMDE({ element: document.getElementById("sintomas"), spellChecker: false });
-      var solucion = new SimpleMDE({ element: document.getElementById("solucion"), spellChecker: false });
+    var getDocumentos = document.querySelector("#getDocumentos");
+    var getDocumento = document.querySelector("#getDocumento");
+
+    var getDocumentos_add = document.querySelector("#getDocumentos_add");
+
+    getDocumentos_add.addEventListener('click', (e) => {
+      e.preventDefault();
+      cargaPantalla("postDocumento");
+
+    });
 
 
-      var guardarBtn = document.querySelector("#guardar-mensaje-btn");
-      var cancelarBtn = document.querySelector("#cancelar-mensaje-btn");
-      var errorMsg = document.querySelector("#error-message");
+    var postDocumento = document.querySelector("#postDocumento");
 
-      // var aux = "";
-      // bd.etiquetas.forEach(function (item) {
-      //   aux += `<a href="#"><span class="tag is-warning">${item}</span></a>`;
-      // });
-      // etiquetero.innerHTML = aux;
+    var tituloInput = document.querySelector("#titulo");
+    var msgBox = document.querySelector("#msgBox");
+    var indicenciasInput = document.querySelector("#indicencias");
+    var etiquetas = document.querySelector("#etiquetas");
+    var etiquetero = document.querySelector("#etiquetero");
 
-      // var tags = document.querySelectorAll(".tag");
-      // tags.forEach(function (item) {
-      //   item.addEventListener('click', function () {
-      //     if (etiquetas.value === "") {
-      //       etiquetas.value = this.innerHTML;
-      //     } else {
-      //       etiquetas.value += ", " + this.innerHTML;
-      //     }
-      //   })
-      // });
+    var tablon = document.querySelector("#tablon");
 
-      cancelarBtn.addEventListener('click', function (e) {
-        e.preventDefault();
+    var sintomas = new SimpleMDE({ element: document.getElementById("sintomas"), spellChecker: false });
+    var solucion = new SimpleMDE({ element: document.getElementById("solucion"), spellChecker: false });
+
+
+    var guardarBtn = document.querySelector("#guardar-mensaje-btn");
+    var cancelarBtn = document.querySelector("#cancelar-mensaje-btn");
+    var errorMsg = document.querySelector("#error-message");
+
+    // var aux = "";
+    // bd.etiquetas.forEach(function (item) {
+    //   aux += `<a href="#"><span class="tag is-warning">${item}</span></a>`;
+    // });
+    // etiquetero.innerHTML = aux;
+
+    // var tags = document.querySelectorAll(".tag");
+    // tags.forEach(function (item) {
+    //   item.addEventListener('click', function () {
+    //     if (etiquetas.value === "") {
+    //       etiquetas.value = this.innerHTML;
+    //     } else {
+    //       etiquetas.value += ", " + this.innerHTML;
+    //     }
+    //   })
+    // });
+
+    cancelarBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      cargaPantalla("getDocumentos");
+    });
+
+    guardarBtn.addEventListener('click', function (e) {
+
+      e.preventDefault();
+
+      if (tituloInput.value === "") {
+        errorMsg.innerHTML += "<li>El campo título es obligatorio</li>";
+      }
+
+      if (etiquetas.value === "") {
+        errorMsg.innerHTML += "<li>El campo etiquetas es obligatorio</li>";
+      }
+
+      if (sintomas.value() === "") {
+        errorMsg.innerHTML += "<li>El campo síntomas es obligatorio</li>";
+      }
+
+      if (solucion.value() === "") {
+        errorMsg.innerHTML += "<li>El campo solución es obligatorio</li>";
+      }
+
+      // console.log(sintomas.value());
+      //console.log(SimpleMDE.prototype.markdown(sintomas.value()));
+
+      if (errorMsg.innerHTML !== "") {
+        errorMsg.innerHTML = "<ul>" + errorMsg.innerHTML + "</ul>";
+
+
+        msgBox.classList.add('is-active');
+        setTimeout(() => {
+          msgBox.classList.remove('is-active');
+          errorMsg.innerHTML = "";
+        }, 2000);
+
+      } else {
+        console.log("todo okay para guardar");
+
+        var registro = {};
+
+        //limpia etiquetas
+        var aux = _.split(etiquetas.value, ",");
+        aux = _.map(aux, _.trim);
+        aux = _.map(aux, _.toLower);
+
+        aux = aux.map((e) => {
+          return _.replace(e, / +/g, "-");
+        });
+        aux = _.uniq(aux);
+
+        registro.titulo = tituloInput.value;
+        registro.incidencias = indicenciasInput.value;
+        registro.etiquetas = aux;
+        registro.sintomas = sintomas.value();
+        registro.solucion = solucion.value();
+
+
+        console.log(registro);
+
+        //Actualizo BD
+
+        bd.registros.push(registro);
+
+        aux = _.concat(bd.etiquetas, registro.etiquetas);
+        bd.etiquetas = _.uniq(aux);
+
         cargaPantalla("getDocumentos");
-      });
 
-      guardarBtn.addEventListener('click', function (e) {
-
-        e.preventDefault();
-
-        if (tituloInput.value === "") {
-          errorMsg.innerHTML += "<li>El campo título es obligatorio</li>";
-        }
-
-        if (etiquetas.value === "") {
-          errorMsg.innerHTML += "<li>El campo etiquetas es obligatorio</li>";
-        }
-
-        if (sintomas.value() === "") {
-          errorMsg.innerHTML += "<li>El campo síntomas es obligatorio</li>";
-        }
-
-        if (solucion.value() === "") {
-          errorMsg.innerHTML += "<li>El campo solución es obligatorio</li>";
-        }
-
-        // console.log(sintomas.value());
-        //console.log(SimpleMDE.prototype.markdown(sintomas.value()));
-
-        if (errorMsg.innerHTML !== "") {
-          errorMsg.innerHTML = "<ul>" + errorMsg.innerHTML + "</ul>";
+      }
 
 
-          msgBox.classList.add('is-active');
-          setTimeout(() => {
-            msgBox.classList.remove('is-active');
-            errorMsg.innerHTML = "";
-          }, 2000);
+    });
 
-        } else {
-          console.log("todo okay para guardar");
+    function cargaPantalla(pantalla = "getDocumentos", id_documento = -1) {
 
-          var registro = {};
+      sessionStorage.pantalla = pantalla;
 
-          //limpia etiquetas
-          var aux = _.split(etiquetas.value, ",");
-          aux = _.map(aux, _.trim);
-          aux = _.map(aux, _.toLower);
+      if (pantalla === "getDocumentos") {
 
-          aux = aux.map((e) => {
-            return _.replace(e, / +/g, "-");
-          });
-          aux = _.uniq(aux);
+        postDocumento.classList.add('invisible');
+        getDocumento.classList.add('invisible');
+        getDocumentos.classList.remove('invisible');
 
-          registro.titulo = tituloInput.value;
-          registro.incidencias = indicenciasInput.value;
-          registro.etiquetas = aux;
-          registro.sintomas = sintomas.value();
-          registro.solucion = solucion.value();
-
-
-          console.log(registro);
-
-          //Actualizo BD
-
-          bd.registros.push(registro);
-
-          aux = _.concat(bd.etiquetas, registro.etiquetas);
-          bd.etiquetas = _.uniq(aux);
-
-          cargaPantalla("getDocumentos");
-
-        }
-
-
-      });
-
-      function cargaPantalla(pantalla = "getDocumentos") {
-
-        sessionStorage.pantalla = pantalla;
-
-        if (pantalla === "getDocumentos") {
-
-          postDocumento.classList.add('invisible');
-          getDocumentos.classList.remove('invisible');
-
-          let resultado = "";
-          bd.registros.forEach(function (registro) {
-            let etiquetas = "Etiquetas: ";
-            registro.etiquetas.forEach(function(etiqueta){
-              etiquetas += `<a href="#">#${etiqueta}</a> `;
-            })
-            let plantilla = `
+        let resultado = "";
+        bd.registros.forEach(function (registro, i) {
+          let etiquetas = "Etiquetas: ";
+          registro.etiquetas.forEach(function (etiqueta) {
+            etiquetas += `<a href="#">#${etiqueta}</a> `;
+          })
+          let plantilla = `
               <div class="card">
                 <header class="card-header">
                   <p class="card-header-title">
-                    ${registro.titulo}
+                    <a href="" onclick="cargaDocumento(${i});return false;">${registro.titulo}</a>
                   </p>
                   <a href="#" class="card-header-icon" aria-label="more options">
                     <span class="icon">
-                      <i class="fa fa-eye is-size-4" aria-hidden="true"></i>
+                      <i class="fa fa-pencil is-size-4" aria-hidden="true"></i>
 
                     </span>
                   </a>
                 </header>
                 <div class="card-content">
                   <div class="content">
+                    <span class="is-pulled-left" style="font-size: .8em;"><a href="#">@jrgavilanes</a></span>
                     <span class="is-pulled-right" style="font-size: .8em;">Creado el 12 Enero de 2018</span>
-                    <br><em>Síntomas:</em><br>
+                    <br><strong><em>Síntomas:</em></strong><br>
                     ${SimpleMDE.prototype.markdown(registro.sintomas)}
-                    <hr>
-                    <span class="is-pulled-left">Autor: <a href="#">@jrgavilanes</a></span>
-                    <span class="is-pulled-right">${etiquetas}</span>    
+                    <hr>                    
+                    ${etiquetas}
                     <br>                
                     
                   </div>
                 </div>
                 <footer class="card-footer">
-                  <a href="#" class="card-footer-item"><span style="font-size: .7em; margin-right: .4em;">Me gusta</span> <i class="fa fa-thumbs-up" aria-hidden="true"></i></a>
-                  <a href="#" class="card-footer-item"><span style="font-size: .7em; margin-right: .4em;">Editar</span> <i class="fa fa-pencil" aria-hidden="true"></i></a>
-                  <a href="#" class="card-footer-item"><span style="font-size: .7em; margin-right: .4em;">0 Comentario/s</span> <i class="fa fa-commenting" aria-hidden="true"></i></a>
+                  <a href="#" class="card-footer-item"><span style="font-size: 1em; margin-right: .4em;">0 </span> <i class="fa fa-thumbs-up is-size-4" aria-hidden="true"></i></a>
+                  <a href="#" class="card-footer-item"><span style="font-size: 1em; margin-right: .4em;">0 </span> <i class="fa fa-commenting is-size-4" aria-hidden="true"></i></a>
                 </footer>
               </div>         
             `;
-            resultado += plantilla;
+          resultado += plantilla;
 
-          });
+        });
 
-          tablon.innerHTML = resultado;
-
-
+        tablon.innerHTML = resultado;
 
 
 
 
-        } else if (pantalla === "postDocumento") {
-
-          getDocumentos.classList.add('invisible');
-          postDocumento.classList.remove('invisible');
-
-          var aux = "";
-          bd.etiquetas.forEach(function (item) {
-            aux += `<a href="#"><span class="tag is-warning">${item}</span></a>`;
-          });
-          etiquetero.innerHTML = aux;
-
-          var tags = document.querySelectorAll(".tag");
-          tags.forEach(function (item) {
-            item.addEventListener('click', function () {
-              if (etiquetas.value === "") {
-                etiquetas.value = this.innerHTML;
-              } else {
-                etiquetas.value += ", " + this.innerHTML;
-              }
-            })
-          });
-
-          tituloInput.value = "";
-          etiquetas.value = "";
-          indicenciasInput.value = "";
-          sintomas.value("");
-          solucion.value("");
-          tituloInput.focus();
 
 
+      } else if (pantalla === "postDocumento") {
 
+        getDocumentos.classList.add('invisible');
+        getDocumento.classList.add('invisible');
+        postDocumento.classList.remove('invisible');
+
+        var aux = "";
+        bd.etiquetas.forEach(function (item) {
+          aux += `<a href="#"><span class="tag is-warning">${item}</span></a>`;
+        });
+        etiquetero.innerHTML = aux;
+
+        var tags = document.querySelectorAll(".tag");
+        tags.forEach(function (item) {
+          item.addEventListener('click', function () {
+            if (etiquetas.value === "") {
+              etiquetas.value = this.innerHTML;
+            } else {
+              etiquetas.value += ", " + this.innerHTML;
+            }
+          })
+        });
+
+        tituloInput.value = "";
+        etiquetas.value = "";
+        indicenciasInput.value = "";
+        sintomas.value("");
+        solucion.value("");
+        tituloInput.focus();
+
+
+
+
+      } else if (pantalla === "getDocumento") {
+
+        getDocumentos.classList.add('invisible');
+        postDocumento.classList.add('invisible');
+        getDocumento.classList.remove('invisible');
+
+        if (bd.registros[id_documento]) {
+          
+          document.querySelector("#getDocumento_titulo").innerHTML = bd.registros[id_documento].titulo;
+          document.querySelector("#getDocumento_incidencias").innerHTML = bd.registros[id_documento].incidencias;
+          document.querySelector("#getDocumento_etiquetas").innerHTML = bd.registros[id_documento].etiquetas.join(", ");
+          document.querySelector("#getDocumento_sintomas").innerHTML = SimpleMDE.prototype.markdown(bd.registros[id_documento].sintomas);
+          document.querySelector("#getDocumento_solucion").innerHTML = SimpleMDE.prototype.markdown(bd.registros[id_documento].solucion);
+
+        } else {
+
+          document.querySelector("#markdown").innerHTML = "No se ha encontrado este documento";
 
         }
 
-        topFunction();
-
-
-
-
       }
 
-      cargaPantalla(sessionStorage.pantalla);
+      topFunction();
+
+    }
+
+    cargaPantalla(sessionStorage.pantalla);
 
 
-      //Helpers
+    //Helpers
 
-      function topFunction() {
-        document.body.scrollTop = 0; // For Safari
-        document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
-      }
+    function topFunction() {
+      document.body.scrollTop = 0; // For Safari
+      document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+    }
+
+    function cargaDocumento(i) {
+      //alert("pues: " +  i);
+
+      cargaPantalla("getDocumento", i);
+
+
+    }
 
 
 
-    </script>
+  </script>
 
 </body>
 
