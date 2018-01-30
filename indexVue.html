@@ -1,42 +1,266 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Seny - Gestor documental</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.1/css/bulma.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.1/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+
+  <style>
+    .floatButton {
+      position: fixed;
+      width: 60px;
+      height: 60px;
+      bottom: 40px;
+      right: 40px;
+      background-color: rgba(20, 100, 5, 0.9);
+      color: #FFF;
+      border-radius: 50px;
+      text-align: center;
+      vertical-align: middle;
+      box-shadow: 2px 2px 3px #999;
+    }
+  </style>
 </head>
+
 <body>
 
   <div id="app">
 
-    <input type="text" v-model='nombre'>
+    <div v-if="estado === 'showAll'">
 
-    <textarea id="sintomas" cols="30" rows="10" required placeholder="¿Cuándo tengo que aplicar este documento?"></textarea>
+      <section class="hero is-info">
+        <div class="hero-body">
+          <div class="container">
+            <h1 class="title">
+              <i class="fa fa-hand-spock-o" aria-hidden="true"></i>
+              <i>Seny</i>
+            </h1>
+            <h2 class="subtitle" style="margin-top: .1em;">
+              <div class="field has-addons">
+                <div class="control">
+                  <input class="input" type="text" placeholder="Encontrar documento">
+                </div>
+                <div class="control">
+                  <a class="button is-warning">
+                    Buscar
+                  </a>
+                </div>
+              </div>
+            </h2>
+          </div>
+        </div>
+      </section>
+
+      <div class="container">
+
+
+        <div class="block" id="tablon">
+        </div>
+
+        <a id="getDocumentos_add" class="floatButton" @click="estado='newDocument'">
+          <i class="fa fa-plus" style="margin-top: 1em; font-size: 1.3em;"></i>
+        </a>
+
+      </div>
+      <!-- container -->
+
+    </div>
+    <!-- showAll -->
+
+
+    <div v-if="estado === 'newDocument'">
+
+      <section class="hero is-info">
+        <div class="hero-body">
+          <div class="container">
+            <h1 class="title">
+              <i class="fa fa-hand-spock-o" aria-hidden="true"></i>
+              <i>Seny</i>
+            </h1>
+            <h2 class="subtitle" style="margin-top: .1em;">
+              Crear documento
+            </h2>
+          </div>
+        </div>
+      </section>
+
+      <div class="container">
+
+        <div class="block" style="margin-top: 1em;">
+          <div class="field">
+            <label class="label">Qué soluciona este documento? *</label>
+            <div class="control">
+              <input v-model="registro_actual.titulo" class="input" type="text" name="titulo" id="titulo" placeholder="Nombre del documento" required>
+            </div>
+          </div>
+        </div>
+        <div class="block">
+          <div class="field">
+            <label class="label">Tiene alguna incidencia relacionada?</label>
+            <div class="control">
+              <input v-model="registro_actual.incidencias" class="input" type="text" name="indicencias" id="indicencias" placeholder="Códigos de incidencias relacionadas">
+            </div>
+          </div>
+        </div>
+        <div class="block">
+          <label class="label">Clasifica el documento *</label>
+          <div class="box">
+            <div class="field">
+
+              <div class="control">
+                <input v-model="registro_actual.etiquetas" class="input" type="text" id="etiquetas" name="etiquetas" placeholder="Etiqueta/s" required>
+              </div>
+            </div>
+
+            <i>Etiquetas existentes: </i>
+
+            <div id="etiquetero">
+              <span v-for="tag in tags" class="tag is-warning" style="margin: .5em;" @click="addTag(tag)">{{tag}}</span>
+            </div>
+
+
+          </div>
+        </div>
+        <div class="block">
+          <label class="label">Síntomas *</label>
+          <sintomas name='sintomas'></sintomas>
+        </div>
+        <div class="block">
+          <label class="label">Procedimiento *</label>
+          <procedimiento name='procedimiento'></procedimiento>
+
+        </div>
+
+        <div class="block">
+          <div class="level is-mobile">
+            <div class="level-left">
+              <p class="control">
+                <a id="cancelar-mensaje-btn" class="button is-blue">
+                  Cancelar
+                </a>
+              </p>
+            </div>
+            <div class="level-right">
+              <p class="control">
+                <a id="guardar-mensaje-btn" class="button is-primary">
+                  Guardar
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal" id="msgBox">
+          <div class="modal-background"></div>
+          <div class="modal-card">
+            <header class="modal-card-head">
+              <p class="modal-card-title">Error</p>
+              <!-- <button class="delete" aria-label="close"></button> -->
+            </header>
+            <section class="modal-card-body">
+              <span id="error-message"></span>
+            </section>
+            <!--
+<footer class="modal-card-foot">
+<button class="button is-success">Save changes</button>
+<button class="button">Cancel</button>
+</footer>
+-->
+          </div>
+        </div>
+
+      </div>
+      <!-- postDocumento -->
 
 
 
-    {{nombre}}
 
-  </div>
-  
-  <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
-  <script>
 
-    var sintomas = new SimpleMDE({ element: document.getElementById("sintomas"), spellChecker: false });
-  
-    new Vue({
-      el: '#app',
-      data: {
-        nombre: 'juanra'
-      }
-    });
 
-  </script>
+
+    </div>
+    <!-- app -->
+
+    <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script>
+
+      // <!-- <editor-wapo name='sintomas'></editor-wapo> -->
+
+      let myGlobal = {};
+
+      Vue.component('sintomas', {
+        template: `<textarea id="sintomas" cols="30" rows="10" required placeholder='Cuándo lo hago?'></textarea>`,
+        props: ['name'],
+        mounted() {
+          myGlobal[this.name] = new SimpleMDE({ element: document.getElementById('sintomas'), spellChecker: false });
+        }
+      });
+
+      Vue.component('procedimiento', {
+        template: `<textarea id='procedimiento' cols='30' rows='10' required placeholder='Cómo lo hago?'></textarea>"`,
+        props: ['name'],
+        mounted() {
+          myGlobal[this.name] = new SimpleMDE({ element: document.getElementById(this.name), spellChecker: false });
+        }
+      });
+
+      let App = new Vue({
+        el: '#app',
+        data: {
+          estado: 'newDocument',
+          registro_actual: {
+            titulo: '',
+            incidencias: '',
+            etiquetas: '',
+            sintomas: '',
+            solucion: ''
+          },
+          tags: ["mga", "silo", "recepcion", "otro"],
+          registros: [
+            {
+              "incidencias": "17R06396",
+              "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
+              "solucion": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nribnsec.rib.mercadona.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsudo -i -u urgentes\n. j-ir.sh alp\ncd inci_silo\nebdp\n```\n\n",
+              "titulo": "Cancelar orden de entrada SILO",
+              "etiquetas": ["mga", "silo", "recepción"]
+            },
+            {
+              "incidencias": "17R06396",
+              "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
+              "solucion": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nribnsec.rib.mercadona.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsudo -i -u urgentes\n. j-ir.sh alp\ncd inci_silo\nebdp\n```\n\n",
+              "titulo": "Cancelar orden de entrada SILO 2",
+              "etiquetas": ["mga", "silo", "recepción"]
+            },
+            {
+              "incidencias": "17R06396",
+              "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
+              "solucion": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nribnsec.rib.mercadona.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsudo -i -u urgentes\n. j-ir.sh alp\ncd inci_silo\nebdp\n```\n\n",
+              "titulo": "Cancelar orden de entrada SILO 3",
+              "etiquetas": ["mga", "silo", "recepción"]
+            }
+          ]
+        },
+        methods: {
+          addTag(tag){
+            if (this.registro_actual.etiquetas==='') {
+              this.registro_actual.etiquetas += tag;
+            } else {
+              this.registro_actual.etiquetas += ", " + tag;
+            }
+            
+          }
+        }
+      });
+
+
+    </script>
 
 </body>
+
 </html>
