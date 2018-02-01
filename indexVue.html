@@ -71,7 +71,7 @@
 
   <div id="app">
 
-    <div v-if="estado === 'showAll'">
+    <div v-show="estado === 'showAll'">
 
       <section class="hero is-info">
         <div class="hero-body">
@@ -100,38 +100,43 @@
 
 
         <div class="block" id="tablon">
-            <div v-for="registro in registros" class="card">
-                <header class="card-header">
-                  <p class="card-header-title">
-                    <a @click="getDocument(registro.titulo)">{{registro.titulo}}</a>
-                  </p>
-                  <a href="#" class="card-header-icon" aria-label="more options">
-                    <span class="icon">
-                      <i class="fa fa-pencil is-size-4" aria-hidden="true"></i>
-                    </span>
-                  </a>
-                </header>
-                <div class="card-content">
-                  <div class="content">
-                    <span class="is-pulled-left" style="font-size: .8em;"><a href="#">@jrgavilanes</a></span>
-                    <span class="is-pulled-right" style="font-size: .8em;">Creado el 12 Enero de 2018</span>
-                    <br><strong><em>Síntomas:</em></strong><br>
-                    <div style="margin-left: 2em;" v-html="SimpleMDE.prototype.markdown(registro.sintomas)"></div>
-                    
-                    <hr>                    
-                    {{registro.etiquetas}}
-                    <br>                
-                    
-                  </div>
-                </div>
-                <!-- <footer class="card-footer">
+          <div v-for="registro in registros" class="card">
+            <header class="card-header">
+              <p class="card-header-title">
+                <a @click="getDocument(registro.titulo)">{{registro.titulo}}</a>
+              </p>
+              <a href="#" class="card-header-icon" aria-label="more options">
+                <span class="icon" @click="editDocument(registro.titulo)">
+                  <i class="fa fa-pencil is-size-4" aria-hidden="true"></i>
+                </span>
+              </a>
+            </header>
+            <div class="card-content">
+              <div class="content">
+                <span class="is-pulled-left" style="font-size: .8em;">
+                  <a href="#">@jrgavilanes</a>
+                </span>
+                <span class="is-pulled-right" style="font-size: .8em;">Creado el 12 Enero de 2018</span>
+                <br>
+                <strong>
+                  <em>Síntomas:</em>
+                </strong>
+                <br>
+                <div style="margin-left: 2em;" v-html="SimpleMDE.prototype.markdown(registro.sintomas)"></div>
+
+                <hr> {{registro.etiquetas}}
+                <br>
+
+              </div>
+            </div>
+            <!-- <footer class="card-footer">
                   <a href="#" class="card-footer-item"><span style="font-size: 1em; margin-right: .4em;">0 </span> <i class="fa fa-thumbs-up is-size-4" aria-hidden="true"></i></a>
                   <a href="#" class="card-footer-item"><span style="font-size: 1em; margin-right: .4em;">0 </span> <i class="fa fa-commenting is-size-4" aria-hidden="true"></i></a>
                 </footer> -->
-              </div>   
+          </div>
         </div>
 
-        <a id="getDocumentos_add" class="floatButton" @click="estado='newDocument'; topScroll();">
+        <a id="getDocumentos_add" class="floatButton" @click="createDocument()">
           <i class="fa fa-plus" style="margin-top: 1em; font-size: 1.3em;"></i>
         </a>
 
@@ -142,7 +147,7 @@
     <!-- showAll -->
 
 
-    <div v-if="estado === 'newDocument'">
+    <div v-show="estado === 'upsertDocument'">
 
       <section class="hero is-info">
         <div class="hero-body">
@@ -152,7 +157,7 @@
               <i>Seny</i>
             </h1>
             <h2 class="subtitle" style="margin-top: .1em;">
-              Crear documento
+              {{titulo_ventana}}
             </h2>
           </div>
         </div>
@@ -218,7 +223,7 @@
             </div>
             <div class="level-right">
               <p class="control">
-                <a id="guardar-mensaje-btn" class="button is-primary" @click="insertDocument()">
+                <a id="guardar-mensaje-btn" class="button is-primary" @click="upsertRecord()">
                   Guardar
                 </a>
               </p>
@@ -233,72 +238,71 @@
     <!-- newDocument -->
 
 
-    <div v-if="estado=='showDocument'" id="showDocument">
+    <div v-show="estado=='showDocument'">
 
-        <section class="hero is-info no-print">
-          <div class="hero-body">
-            <div class="container">
-              <h1 class="title">
-                <a href="#" title="Volver" onclick="cargaPantalla('getDocumentos');return false;">
-                  <i class="fa fa-hand-spock-o" aria-hidden="true"></i>
-                  <i>Seny</i>
-                </a>
-              </h1>
-              <h2 class="subtitle" style="margin-top: .1em;">
-                Mostrar documento
-  
-              </h2>
-            </div>
+      <section class="hero is-info no-print">
+        <div class="hero-body">
+          <div class="container">
+            <h1 class="title">
+              <a href="#" title="Volver">
+                <i class="fa fa-hand-spock-o" aria-hidden="true"></i>
+                <i>Seny</i>
+              </a>
+            </h1>
+            <h2 class="subtitle" style="margin-top: .1em;">
+              Mostrar documento
+            </h2>
           </div>
-        </section>
-  
-        <div class="container">
-  
-  
-  
-          <div id="markdown" style="margin: .5em;">
-  
-  
-  
-            <strong>
-              <span class="is-size-4">Título: </span>
-            </strong>
-            {{registro_actual.titulo}}
-            <br>
-            <strong>
-              <span class="is-size-4">Incidencia/s: </span>
-            </strong>
-            {{registro_actual.incidencias}}
-            <br>
-            <strong>
-              <span class="is-size-4">Etiqueta/s: </span>
-            </strong>
-            {{registro_actual.etiquetas}}
-            <br>
-            <strong>
-              <span class="is-size-4">Síntomas: </span>
-            </strong>
-            <div style="margin-top: .5em;" v-html="SimpleMDE.prototype.markdown(registro_actual.sintomas)"></div>
-            <strong>
-              <span class="is-size-4">Procedimiento: </span>
-            </strong>
-            <div style="margin-top: .5em;" v-html="SimpleMDE.prototype.markdown(registro_actual.procedimiento)"></div>
-  
-          </div>
-          <!-- markdown -->
-  
-          <br>
-          <p class="control" style="margin: .5em;">
-            <a class="button is-blue no-print" @click="estado='showAll';topScroll();">
-              Volver
-            </a>
-          </p>
-  
         </div>
-        <!-- container -->
-  
+      </section>
+
+      <div class="container">
+
+
+
+        <div id="markdown" style="margin: .5em;">
+
+
+
+          <strong>
+            <span class="is-size-4">Título: </span>
+          </strong>
+          {{registro_actual.titulo}}
+          <br>
+          <strong>
+            <span class="is-size-4">Incidencia/s: </span>
+          </strong>
+          {{registro_actual.incidencias}}
+          <br>
+          <strong>
+            <span class="is-size-4">Etiqueta/s: </span>
+          </strong>
+          {{registro_actual.etiquetas}}
+          <br>
+          <strong>
+            <span class="is-size-4">Síntomas: </span>
+          </strong>
+          <div style="margin-top: .5em;" v-html="SimpleMDE.prototype.markdown(registro_actual.sintomas)"></div>
+          <strong>
+            <span class="is-size-4">Procedimiento: </span>
+          </strong>
+          <div style="margin-top: .5em;" v-html="SimpleMDE.prototype.markdown(registro_actual.procedimiento)"></div>
+
+        </div>
+        <!-- markdown -->
+
+        <br>
+        <p class="control" style="margin: .5em;">
+          <a class="button is-blue no-print" @click="estado='showAll';topScroll();">
+            Volver
+          </a>
+        </p>
+
       </div>
-      <!-- showDocument -->
+      <!-- container -->
+
+    </div>
+    <!-- showDocument -->
 
     <!-- modales -->
 
@@ -369,11 +373,7 @@
       }
     });
 
-
-
-
-
-    // estados: [showAll|insertDocument|showDocument]
+    // estados: [showAll|upsertDocument|showDocument]
 
     let App = new Vue({
       el: '#app',
@@ -382,6 +382,8 @@
         errorMessage: '',
         notificacion: '',
         confirmacion: '',
+        titulo_ventana: '',
+        registroHash: '',
         registro_actual: {
           titulo: '',
           incidencias: '',
@@ -422,75 +424,112 @@
             this.registro_actual.etiquetas += ", " + tag;
           }
         },
-        insertDocument() {
+        upsertRecord() {
 
-          let reg = {};
+          if (this.titulo_ventana === 'Crear documento') {
 
-          //limpia etiquetas
-          let aux = _.split(this.registro_actual.etiquetas, ",");
-          aux = _.map(aux, _.trim);
-          aux = _.map(aux, _.toLower);
-          aux = aux.map((e) => {
-            return _.replace(e, / +/g, "-");
-          });
-          aux = _.uniq(aux);
-          reg.etiquetas = aux;
+            let reg = {};
 
-          reg.titulo = this.registro_actual.titulo;
-          reg.incidencias = this.registro_actual.incidencias;
-          reg.sintomas = myGlobal.sintomas.value();
-          reg.procedimiento = myGlobal.procedimiento.value();
+            //limpia etiquetas
+            let aux = _.split(this.registro_actual.etiquetas, ",");
+            aux = _.map(aux, _.trim);
+            aux = _.map(aux, _.toLower);
+            aux = aux.map((e) => {
+              return _.replace(e, / +/g, "-");
+            });
+            aux = _.uniq(aux);
+            reg.etiquetas = aux;
+
+            reg.titulo = this.registro_actual.titulo;
+            reg.incidencias = this.registro_actual.incidencias;
+            reg.sintomas = myGlobal.sintomas.value();
+            reg.procedimiento = myGlobal.procedimiento.value();
 
 
-          //Comprueba campos
-          if (this.registro_actual.titulo === '') {
-            this.errorMessage = '<li>Titulo no puede estar vacío</li>';
+            //Comprueba campos
+
+            // Este campo ha de ser único en la BD
+            if (this.registro_actual.titulo === '') {
+              this.errorMessage = '<li>Titulo no puede estar vacío</li>';
+            }
+
+            if (this.registro_actual.etiquetas === '') {
+              this.errorMessage += '<li>Las etiquetas no pueden estar vacias</li>';
+            }
+
+            if (myGlobal.sintomas.value() === '') {
+              this.errorMessage += '<li>El campo de síntomas no puede estar vacío</li>';
+            }
+
+            if (myGlobal.procedimiento.value() === '') {
+              this.errorMessage += '<li>El campo de procedimiento no puede estar vacío</li>';
+            }
+
+            if (this.errorMessage === '') {
+              this.registros.push(reg);
+              this.notificacion = 'El documento ha sido almacenado';
+              setTimeout(() => {
+                this.notificacion = '';
+              }, 2000);
+            }
+
+            this.titulo_ventana = 'Editar documento';
+
+            //falta comprobar las etiquetas tags
+            this.registroHash = this.registro_actual.titulo +
+                                this.registro_actual.incidencias +
+                                myGlobal.sintomas.value() +
+                                myGlobal.procedimiento.value();
+
+
+
+           
           }
 
-          if (this.registro_actual.etiquetas === '') {
-            this.errorMessage += '<li>Las etiquetas no pueden estar vacias</li>';
-          }
-
-          if (myGlobal.sintomas.value() === '') {
-            this.errorMessage += '<li>El campo de síntomas no puede estar vacío</li>';
-          }
-
-          if (myGlobal.procedimiento.value() === '') {
-            this.errorMessage += '<li>El campo de procedimiento no puede estar vacío</li>';
-          }
-
-
-
-
-          // this.registro_actual.etiquetas
-          // this.registro_actual.incidencias
-          // myGlobal.sintomas.value()
-          // myGlobal.solucion.value()
-
-
-          if (this.errorMessage === '') {
-            this.registros.push(reg);
-            this.notificacion = 'El documento ha sido almacenado';
-            setTimeout(() => {
-              this.notificacion = '';
-            }, 2000);
-          }
         },
         questionExitFromInsert() {
-          if (this.registro_actual.titulo !== '' ||
-            this.registro_actual.etiquetas !== '' ||
-            this.registro_actual.incidencias !== '' ||
-            myGlobal.sintomas.value() !== '' ||
-            myGlobal.procedimiento.value() !== ''
-          ) {
 
-            this.confirmacion = "¿Deseas salir sin guardar cambios?";
 
-          } else {
+          if (this.titulo_ventana === 'Crear documento') {
 
-            this.exitFromInsert();
+            if (this.registro_actual.titulo !== '' ||
+              this.registro_actual.etiquetas !== '' ||
+              this.registro_actual.incidencias !== '' ||
+              myGlobal.sintomas.value() !== '' ||
+              myGlobal.procedimiento.value() !== ''
+
+            ) {
+
+              this.confirmacion = "¿Deseas salir sin guardar cambios?";
+
+            } else {
+
+              this.exitFromInsert();
+
+            }
 
           }
+
+          if (this.titulo_ventana === 'Editar documento') {
+
+            if (this.registroHash !== this.registro_actual.titulo +
+                                      this.registro_actual.incidencias +
+                                      myGlobal.sintomas.value() +
+                                      myGlobal.procedimiento.value()
+
+            ) {
+
+              this.confirmacion = "¿Deseas salir sin guardar cambios?";
+
+            } else {
+
+              this.exitFromInsert();
+
+            }
+
+          }
+
+
 
         },
         exitFromInsert() {
@@ -500,23 +539,25 @@
           myGlobal.sintomas.value("");
           myGlobal.procedimiento.value("");
 
-          
+
           this.confirmacion = '';
-          
+
           this.estado = 'showAll';
 
           this.topScroll();
-          
+
 
         },
-        getDocument(title){
-          
+        getDocument(title) {
+
           // title = "Cancelar orden de entrada SILO";
           // this.registros.filter((title)=>{
           //   return titulo === title;
           // });
 
-          for (let i=0; i<this.registros.length; i++) {
+          this.topScroll();
+
+          for (let i = 0; i < this.registros.length; i++) {
             if (this.registros[i].titulo === title) {
               this.registro_actual.titulo = this.registros[i].titulo;
               this.registro_actual.incidencias = this.registros[i].incidencias;
@@ -528,9 +569,59 @@
           }
 
           this.estado = 'showDocument';
-          
+
         },
-        topScroll(){
+        editDocument(title) {
+
+          this.topScroll();
+
+          for (let i = 0; i < this.registros.length; i++) {
+            if (this.registros[i].titulo === title) {
+              this.registro_actual.titulo = this.registros[i].titulo;
+              this.registro_actual.incidencias = this.registros[i].incidencias;
+              this.registro_actual.etiquetas = this.registros[i].etiquetas;
+              this.registro_actual.sintomas = this.registros[i].sintomas;
+              this.registro_actual.procedimiento = this.registros[i].procedimiento;
+              break;
+            }
+          }
+
+          myGlobal.sintomas.value(this.registro_actual.sintomas);
+          myGlobal.procedimiento.value(this.registro_actual.procedimiento);
+
+          setTimeout(() => {
+            myGlobal.sintomas.codemirror.refresh();
+            myGlobal.procedimiento.codemirror.refresh();
+          }, 100);
+
+          this.titulo_ventana = "Editar documento"
+          this.estado = 'upsertDocument';
+
+          //falta comprobar las etiquetas tags
+          this.registroHash = this.registro_actual.titulo +
+                                this.registro_actual.incidencias +
+                                myGlobal.sintomas.value() +
+                                myGlobal.procedimiento.value();
+
+        },
+        createDocument() {
+
+          this.topScroll();
+
+          // myGlobal.sintomas.value("");
+          // myGlobal.procedimiento.value("");
+
+          this.registro_actual.titulo = "";
+          this.registro_actual.incidencias = "";
+          this.registro_actual.etiquetas = "";
+          this.registro_actual.sintomas = "";
+          this.registro_actual.procedimiento = "";
+
+          this.titulo_ventana = "Crear documento"
+          this.estado = 'upsertDocument';
+
+        },
+        topScroll() {
           document.body.scrollTop = 0; // For Safari
           document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
         }
