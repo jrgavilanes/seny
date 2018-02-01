@@ -100,9 +100,38 @@
 
 
         <div class="block" id="tablon">
+            <div v-for="registro in registros" class="card">
+                <header class="card-header">
+                  <p class="card-header-title">
+                    <a @click="getDocument(registro.titulo)">{{registro.titulo}}</a>
+                  </p>
+                  <a href="#" class="card-header-icon" aria-label="more options">
+                    <span class="icon">
+                      <i class="fa fa-pencil is-size-4" aria-hidden="true"></i>
+                    </span>
+                  </a>
+                </header>
+                <div class="card-content">
+                  <div class="content">
+                    <span class="is-pulled-left" style="font-size: .8em;"><a href="#">@jrgavilanes</a></span>
+                    <span class="is-pulled-right" style="font-size: .8em;">Creado el 12 Enero de 2018</span>
+                    <br><strong><em>Síntomas:</em></strong><br>
+                    <div style="margin-left: 2em;" v-html="SimpleMDE.prototype.markdown(registro.sintomas)"></div>
+                    
+                    <hr>                    
+                    {{registro.etiquetas}}
+                    <br>                
+                    
+                  </div>
+                </div>
+                <!-- <footer class="card-footer">
+                  <a href="#" class="card-footer-item"><span style="font-size: 1em; margin-right: .4em;">0 </span> <i class="fa fa-thumbs-up is-size-4" aria-hidden="true"></i></a>
+                  <a href="#" class="card-footer-item"><span style="font-size: 1em; margin-right: .4em;">0 </span> <i class="fa fa-commenting is-size-4" aria-hidden="true"></i></a>
+                </footer> -->
+              </div>   
         </div>
 
-        <a id="getDocumentos_add" class="floatButton" @click="estado='newDocument'">
+        <a id="getDocumentos_add" class="floatButton" @click="estado='newDocument'; topScroll();">
           <i class="fa fa-plus" style="margin-top: 1em; font-size: 1.3em;"></i>
         </a>
 
@@ -135,7 +164,8 @@
           <div class="field">
             <label class="label">Qué soluciona este documento? *</label>
             <div class="control">
-              <input v-model="registro_actual.titulo" class="input" type="text" name="titulo" id="titulo" placeholder="Nombre del documento" required>
+              <input v-model="registro_actual.titulo" class="input" type="text" name="titulo" id="titulo" placeholder="Nombre del documento"
+                required>
             </div>
           </div>
         </div>
@@ -153,7 +183,8 @@
             <div class="field">
 
               <div class="control">
-                <input v-model="registro_actual.etiquetas" class="input" type="text" id="etiquetas" name="etiquetas" placeholder="Etiqueta/s" required>
+                <input v-model="registro_actual.etiquetas" class="input" type="text" id="etiquetas" name="etiquetas" placeholder="etiqueta1, etiqueta2"
+                  required>
               </div>
             </div>
 
@@ -195,219 +226,319 @@
           </div>
         </div>
 
-        
-
       </div>
-      <!-- postDocumento -->
-
-
-
-
-      <div v-if="errorMessage!==''" class="modal is-active" id="msgBox" @click="errorMessage=''">
-        <div class="modal-background"></div>
-        <div class="modal-card">
-          <header class="modal-card-head">
-            <p class="modal-card-title">Error</p>
-            <button class="delete" aria-label="close"></button>
-          </header>
-          <section class="modal-card-body">
-            <div v-html="errorMessage"></div>
-          </section>          
-        </div>
-      </div>
-
-      <div v-if="notificacion!==''" class="notification notificacion is-link">
-        <!-- <button class="delete"></button> -->
-        <div v-html="notificacion"></div>
-      </div>
-
-      <div v-if="confirmacion!==''" class="modal is-active">
-        <div class="modal-background"></div>
-        <div class="modal-card">
-          <header class="modal-card-head">
-            <p class="modal-card-title">Ventana de confirmación</p>
-            <button class="delete" aria-label="close" @click="confirmacion=''"></button>
-          </header>
-          <section class="modal-card-body">
-            <div v-html="confirmacion"></div>            
-          </section>
-          <footer class="modal-card-foot">
-            <button class="button is-success" @click="exitFromInsert()">Salir</button>
-            <button class="button" @click="confirmacion=''">Cancelar</button>
-          </footer>
-        </div>
-      </div>
-
-
+      <!-- container -->
 
     </div>
-    <!-- app -->
-
-    <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.4/lodash.min.js"></script>    
-    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
-    <script>
-
-      // <!-- <editor-wapo name='sintomas'></editor-wapo> -->
-
-      let myGlobal = {};
-
-      Vue.component('sintomas', {
-        template: `<textarea id="sintomas" cols="30" rows="10" required placeholder='Cuándo lo hago?'></textarea>`,
-        props: ['name'],
-        mounted() {
-          myGlobal[this.name] = new SimpleMDE({ element: document.getElementById('sintomas'), spellChecker: false });
-        }
-      });
-
-      Vue.component('procedimiento', {
-        template: `<textarea id='procedimiento' cols='30' rows='10' required placeholder='Cómo lo hago?'></textarea>"`,
-        props: ['name'],
-        mounted() {
-          myGlobal[this.name] = new SimpleMDE({ element: document.getElementById(this.name), spellChecker: false });
-        }
-      });
-
-      
-        
+    <!-- newDocument -->
 
 
-      // estados: [showAll|insertDocument]
+    <div v-if="estado=='showDocument'" id="showDocument">
 
-      let App = new Vue({
-        el: '#app',
-        data: {
-          estado: 'showAll',
-          errorMessage: '',
-          notificacion: '',
-          confirmacion:'',
-          registro_actual: {
-            titulo: '',
-            incidencias: '',
-            etiquetas: '',
-            sintomas: '',
-            procedimiento: ''
-          },
-          tags: ["mga", "silo", "recepcion", "otro"],
-          registros: [
-            {
-              "incidencias": "17R06396",
-              "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
-              "procedimiento": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nribnsec.rib.mercadona.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsudo -i -u urgentes\n. j-ir.sh alp\ncd inci_silo\nebdp\n```\n\n",
-              "titulo": "Cancelar orden de entrada SILO",
-              "etiquetas": ["mga", "silo", "recepción"]
-            },
-            {
-              "incidencias": "17R06396",
-              "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
-              "procedimiento": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nribnsec.rib.mercadona.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsudo -i -u urgentes\n. j-ir.sh alp\ncd inci_silo\nebdp\n```\n\n",
-              "titulo": "Cancelar orden de entrada SILO 2",
-              "etiquetas": ["mga", "silo", "recepción"]
-            },
-            {
-              "incidencias": "17R06396",
-              "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
-              "procedimiento": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nribnsec.rib.mercadona.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsudo -i -u urgentes\n. j-ir.sh alp\ncd inci_silo\nebdp\n```\n\n",
-              "titulo": "Cancelar orden de entrada SILO 3",
-              "etiquetas": ["mga", "silo", "recepción"]
-            }
-          ]
+        <section class="hero is-info no-print">
+          <div class="hero-body">
+            <div class="container">
+              <h1 class="title">
+                <a href="#" title="Volver" onclick="cargaPantalla('getDocumentos');return false;">
+                  <i class="fa fa-hand-spock-o" aria-hidden="true"></i>
+                  <i>Seny</i>
+                </a>
+              </h1>
+              <h2 class="subtitle" style="margin-top: .1em;">
+                Mostrar documento
+  
+              </h2>
+            </div>
+          </div>
+        </section>
+  
+        <div class="container">
+  
+  
+  
+          <div id="markdown" style="margin: .5em;">
+  
+  
+  
+            <strong>
+              <span class="is-size-4">Título: </span>
+            </strong>
+            {{registro_actual.titulo}}
+            <br>
+            <strong>
+              <span class="is-size-4">Incidencia/s: </span>
+            </strong>
+            {{registro_actual.incidencias}}
+            <br>
+            <strong>
+              <span class="is-size-4">Etiqueta/s: </span>
+            </strong>
+            {{registro_actual.etiquetas}}
+            <br>
+            <strong>
+              <span class="is-size-4">Síntomas: </span>
+            </strong>
+            <div style="margin-top: .5em;" v-html="SimpleMDE.prototype.markdown(registro_actual.sintomas)"></div>
+            <strong>
+              <span class="is-size-4">Procedimiento: </span>
+            </strong>
+            <div style="margin-top: .5em;" v-html="SimpleMDE.prototype.markdown(registro_actual.procedimiento)"></div>
+  
+          </div>
+          <!-- markdown -->
+  
+          <br>
+          <p class="control" style="margin: .5em;">
+            <a class="button is-blue no-print" @click="estado='showAll';topScroll();">
+              Volver
+            </a>
+          </p>
+  
+        </div>
+        <!-- container -->
+  
+      </div>
+      <!-- showDocument -->
+
+    <!-- modales -->
+
+    <div v-if="errorMessage!==''" class="modal is-active" id="msgBox" @click="errorMessage=''">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Error</p>
+          <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+          <div style="margin-left: 2em;" v-html="errorMessage"></div>
+        </section>
+      </div>
+    </div>
+
+    <div v-if="notificacion!==''" class="notification notificacion is-link">
+      <!-- <button class="delete"></button> -->
+      <div v-html="notificacion"></div>
+    </div>
+
+    <div v-if="confirmacion!==''" class="modal is-active">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Ventana de confirmación</p>
+          <button class="delete" aria-label="close" @click="confirmacion=''"></button>
+        </header>
+        <section class="modal-card-body">
+          <div v-html="confirmacion"></div>
+        </section>
+        <footer class="modal-card-foot">
+          <button class="button is-success" @click="exitFromInsert()">Salir</button>
+          <button class="button" @click="confirmacion=''">Cancelar</button>
+        </footer>
+      </div>
+    </div>
+
+    <!-- fin-modales -->
+
+
+
+  </div>
+  <!-- app -->
+
+  <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.4/lodash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <script>
+
+    // <!-- <editor-wapo name='sintomas'></editor-wapo> -->
+
+    let myGlobal = {};
+
+    Vue.component('sintomas', {
+      template: `<textarea id="sintomas" cols="30" rows="10" required placeholder='Cuándo lo hago?'></textarea>`,
+      props: ['name'],
+      mounted() {
+        myGlobal[this.name] = new SimpleMDE({ element: document.getElementById('sintomas'), spellChecker: false });
+      }
+    });
+
+    Vue.component('procedimiento', {
+      template: `<textarea id='procedimiento' cols='30' rows='10' required placeholder='Cómo lo hago?'></textarea>"`,
+      props: ['name'],
+      mounted() {
+        myGlobal[this.name] = new SimpleMDE({ element: document.getElementById(this.name), spellChecker: false });
+      }
+    });
+
+
+
+
+
+    // estados: [showAll|insertDocument|showDocument]
+
+    let App = new Vue({
+      el: '#app',
+      data: {
+        estado: 'showAll',
+        errorMessage: '',
+        notificacion: '',
+        confirmacion: '',
+        registro_actual: {
+          titulo: '',
+          incidencias: '',
+          etiquetas: '',
+          sintomas: '',
+          procedimiento: ''
         },
-        methods: {
-          addTag(tag){
-            if (this.registro_actual.etiquetas==='') {
-              this.registro_actual.etiquetas += tag;
-            } else {
-              this.registro_actual.etiquetas += ", " + tag;
-            }            
+        tags: ["mga", "silo", "recepcion", "otro"],
+        registros: [
+          {
+            "incidencias": "17R06396",
+            "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
+            "procedimiento": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nribnsec.rib.mercadona.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsudo -i -u urgentes\n. j-ir.sh alp\ncd inci_silo\nebdp\n```\n\n",
+            "titulo": "Cancelar orden de entrada SILO",
+            "etiquetas": ["mga", "silo", "recepción"]
           },
-          insertDocument(){
-            
-            let reg = {};
-
-            //limpia etiquetas
-            let aux = _.split(this.registro_actual.etiquetas, ",");
-            aux = _.map(aux, _.trim);
-            aux = _.map(aux, _.toLower);
-            aux = aux.map((e) => {
-              return _.replace(e, / +/g, "-");
-            });
-            aux = _.uniq(aux);
-            reg.etiquetas = aux;
-
-            reg.titulo = this.registro_actual.titulo;
-            reg.incidencias = this.registro_actual.incidencias;
-            reg.sintomas = myGlobal.sintomas.value();
-            reg.procedimiento = myGlobal.procedimiento.value();
-
-            
-            //Comprueba campos
-            if (this.registro_actual.titulo === '') {
-              this.errorMessage = '<li>Titulo no puede estar vacío</li>';              
-            }
-
-            if (this.registro_actual.etiquetas === '') {
-              this.errorMessage += '<li>Las etiquetas no pueden estar vacias</li>';              
-            }
-
-            if (myGlobal.sintomas.value() === '') {
-              this.errorMessage += '<li>El campo de síntomas no puede estar vacío</li>';              
-            }
-
-            if (myGlobal.procedimiento.value() === '') {
-              this.errorMessage += '<li>El campo de procedimiento no puede estar vacío</li>';              
-            }
-
-
-
-
-            // this.registro_actual.etiquetas
-            // this.registro_actual.incidencias
-            // myGlobal.sintomas.value()
-            // myGlobal.solucion.value()
-
-            
-            if (this.errorMessage === '') {
-              this.registros.push(reg);
-              this.notificacion = 'El documento ha sido almacenado';
-              setTimeout(() => {
-                this.notificacion = '';
-              }, 2000);
-            }
+          {
+            "incidencias": "17R06396",
+            "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
+            "procedimiento": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nribnsec.rib.mercadona.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsudo -i -u urgentes\n. j-ir.sh alp\ncd inci_silo\nebdp\n```\n\n",
+            "titulo": "Cancelar orden de entrada SILO 2",
+            "etiquetas": ["mga", "silo", "recepción"]
           },
-          questionExitFromInsert(){
-            if (  this.registro_actual.titulo       !== ''  ||
-                  this.registro_actual.etiquetas    !== ''  ||
-                  this.registro_actual.incidencias  !== ''  ||
-                  myGlobal.sintomas.value()         !== ''  ||
-                  myGlobal.procedimiento.value()    !== ''
-              ) {
+          {
+            "incidencias": "17R06396",
+            "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
+            "procedimiento": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nribnsec.rib.mercadona.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsudo -i -u urgentes\n. j-ir.sh alp\ncd inci_silo\nebdp\n```\n\n",
+            "titulo": "Cancelar orden de entrada SILO 3",
+            "etiquetas": ["mga", "silo", "recepción"]
+          }
+        ]
+      },
+      methods: {
+        addTag(tag) {
+          if (this.registro_actual.etiquetas === '') {
+            this.registro_actual.etiquetas += tag;
+          } else {
+            this.registro_actual.etiquetas += ", " + tag;
+          }
+        },
+        insertDocument() {
 
-              this.confirmacion = "¿Deseas salir sin guardar cambios?";
+          let reg = {};
 
-            } else {
+          //limpia etiquetas
+          let aux = _.split(this.registro_actual.etiquetas, ",");
+          aux = _.map(aux, _.trim);
+          aux = _.map(aux, _.toLower);
+          aux = aux.map((e) => {
+            return _.replace(e, / +/g, "-");
+          });
+          aux = _.uniq(aux);
+          reg.etiquetas = aux;
 
-              this.exitFromInsert();
+          reg.titulo = this.registro_actual.titulo;
+          reg.incidencias = this.registro_actual.incidencias;
+          reg.sintomas = myGlobal.sintomas.value();
+          reg.procedimiento = myGlobal.procedimiento.value();
 
-            }
-            
-          },
-          exitFromInsert(){
-            this.registro_actual.titulo = '';
-            this.registro_actual.etiquetas = '';
-            this.registro_actual.incidencias = '';
-            myGlobal.sintomas.value("");
-            myGlobal.procedimiento.value("");
 
-            this.confirmacion='';
-            this.estado = 'showAll';
+          //Comprueba campos
+          if (this.registro_actual.titulo === '') {
+            this.errorMessage = '<li>Titulo no puede estar vacío</li>';
+          }
+
+          if (this.registro_actual.etiquetas === '') {
+            this.errorMessage += '<li>Las etiquetas no pueden estar vacias</li>';
+          }
+
+          if (myGlobal.sintomas.value() === '') {
+            this.errorMessage += '<li>El campo de síntomas no puede estar vacío</li>';
+          }
+
+          if (myGlobal.procedimiento.value() === '') {
+            this.errorMessage += '<li>El campo de procedimiento no puede estar vacío</li>';
+          }
+
+
+
+
+          // this.registro_actual.etiquetas
+          // this.registro_actual.incidencias
+          // myGlobal.sintomas.value()
+          // myGlobal.solucion.value()
+
+
+          if (this.errorMessage === '') {
+            this.registros.push(reg);
+            this.notificacion = 'El documento ha sido almacenado';
+            setTimeout(() => {
+              this.notificacion = '';
+            }, 2000);
+          }
+        },
+        questionExitFromInsert() {
+          if (this.registro_actual.titulo !== '' ||
+            this.registro_actual.etiquetas !== '' ||
+            this.registro_actual.incidencias !== '' ||
+            myGlobal.sintomas.value() !== '' ||
+            myGlobal.procedimiento.value() !== ''
+          ) {
+
+            this.confirmacion = "¿Deseas salir sin guardar cambios?";
+
+          } else {
+
+            this.exitFromInsert();
 
           }
+
+        },
+        exitFromInsert() {
+          this.registro_actual.titulo = '';
+          this.registro_actual.etiquetas = '';
+          this.registro_actual.incidencias = '';
+          myGlobal.sintomas.value("");
+          myGlobal.procedimiento.value("");
+
+          
+          this.confirmacion = '';
+          
+          this.estado = 'showAll';
+
+          this.topScroll();
+          
+
+        },
+        getDocument(title){
+          
+          // title = "Cancelar orden de entrada SILO";
+          // this.registros.filter((title)=>{
+          //   return titulo === title;
+          // });
+
+          for (let i=0; i<this.registros.length; i++) {
+            if (this.registros[i].titulo === title) {
+              this.registro_actual.titulo = this.registros[i].titulo;
+              this.registro_actual.incidencias = this.registros[i].incidencias;
+              this.registro_actual.etiquetas = this.registros[i].etiquetas;
+              this.registro_actual.sintomas = this.registros[i].sintomas;
+              this.registro_actual.procedimiento = this.registros[i].procedimiento;
+              break;
+            }
+          }
+
+          this.estado = 'showDocument';
+          
+        },
+        topScroll(){
+          document.body.scrollTop = 0; // For Safari
+          document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
         }
-      });
+      }
+    });
 
 
-    </script>
+  </script>
 
 </body>
 
