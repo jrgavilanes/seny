@@ -19,31 +19,23 @@
         display: none !important;
       }
     }
-
     .tag {
       margin: .2em;
       cursor: pointer;
     }
-
     /* https://www.w3schools.com/cssref/css_default_values.asp */
-
     .block {
       margin: 1em;
     }
-
     .hero {
       margin-bottom: 1em;
     }
-
-
     .invisible {
       display: none;
     }
-
     .card {
       margin-bottom: 1em;
     }
-
     .floatButton {
       position: fixed;
       width: 60px;
@@ -57,7 +49,6 @@
       vertical-align: middle;
       box-shadow: 2px 2px 3px #999;
     }
-
     .notificacion {
       position: fixed;
       z-index: 1000;
@@ -70,6 +61,56 @@
 <body>
 
   <div id="app">
+
+    <div v-show="estado === 'login'">
+
+      <section class="hero is-info">
+        <div class="hero-body">
+          <div class="container">
+            <h1 class="title">
+              <i class="fa fa-hand-spock-o" aria-hidden="true"></i>
+              <i>Seny</i>
+            </h1>
+            <h2 class="subtitle" style="margin-top: .1em;">
+              Control de acceso
+            </h2>
+          </div>
+        </div>
+      </section>
+
+      <div class="container">
+        
+          <div class="block">
+            <div class="field">
+              <label class="label">Usuario</label>
+              <div class="control">
+                <input v-model="usuario" @keyup.enter="validar()" class="input" type="text" placeholder="Usuario">
+              </div>
+            </div>
+          </div>
+      
+          <div class="block">
+            <div class="field">
+              <label class="label">Password</label>
+              <div class="control">
+                <input type="password" @keyup.enter="validar()" v-model="password" class="input" type="text" placeholder="Password">
+              </div>
+            </div>
+          </div>
+      
+          <div class="block">
+            <p class="control">
+              <a id="guardar-mensaje-btn" class="button is-primary" @click="validar()">
+                Validar
+              </a>
+            </p>
+          </div>
+       
+      </div>
+      <!-- container -->
+
+    </div>
+    <!-- Login -->
 
     <div v-show="estado === 'showAll'">
 
@@ -92,21 +133,21 @@
                 </div>
               </div>
             </h2>
+            Hola {{usuario}}! <a @click="logout()">Cerrar sesión</a>
           </div>
         </div>
       </section>
 
       <div class="container">
 
-
         <div class="block" id="tablon">
           <div v-for="registro in vista" class="card">
             <header class="card-header">
               <p class="card-header-title">
-                <a @click="getDocument(registro.titulo)">{{registro.titulo}}</a>
+                <a title="Abrir documento" @click="getDocument(registro.titulo)">{{registro.titulo}}</a>
               </p>
-              <a href="#" class="card-header-icon" aria-label="more options">
-                <span class="icon" @click="editDocument(registro.titulo)">
+              <a href="#" v-show="registro.autor==usuario" class="card-header-icon" aria-label="more options">
+                <span class="icon" title="Editar documento" @click="editDocument(registro.titulo)">
                   <i class="fa fa-pencil is-size-4" aria-hidden="true"></i>
                 </span>
               </a>
@@ -114,7 +155,7 @@
             <div class="card-content">
               <div class="content">
                 <span class="is-pulled-left" style="font-size: .8em;">
-                  <a href="#">@jrgavilanes</a>
+                  <a title="Mostrar documentos de este autor" href="#">@{{registro.autor}}</a>
                 </span>
                 <span class="is-pulled-right" style="font-size: .8em;">Creado el 12 Enero de 2018</span>
                 <br>
@@ -159,6 +200,7 @@
             <h2 class="subtitle" style="margin-top: .1em;">
               {{titulo_ventana}}
             </h2>
+            Hola {{usuario}}! <a @click="logout()">Cerrar sesión</a>
           </div>
         </div>
       </section>
@@ -252,6 +294,7 @@
             <h2 class="subtitle" style="margin-top: .1em;">
               Mostrar documento
             </h2>
+            Hola {{usuario}}! <a @click="logout()">Cerrar sesión</a>
           </div>
         </div>
       </section>
@@ -352,11 +395,8 @@
   <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.4/lodash.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vue"></script>
   <script>
-
     // <!-- <editor-wapo name='sintomas'></editor-wapo> -->
-
     let myGlobal = {};
-
     Vue.component('sintomas', {
       template: `<textarea id="sintomas" cols="30" rows="10" required placeholder='Cuándo lo hago?'></textarea>`,
       props: ['name'],
@@ -364,7 +404,6 @@
         myGlobal[this.name] = new SimpleMDE({ element: document.getElementById('sintomas'), spellChecker: false });
       }
     });
-
     Vue.component('procedimiento', {
       template: `<textarea id='procedimiento' cols='30' rows='10' required placeholder='Cómo lo hago?'></textarea>"`,
       props: ['name'],
@@ -372,9 +411,7 @@
         myGlobal[this.name] = new SimpleMDE({ element: document.getElementById(this.name), spellChecker: false });
       }
     });
-
-    // estados: [showAll|upsertDocument|showDocument]
-
+    // estados: [showAll|upsertDocument|showDocument|login]
     let App = new Vue({
       el: '#app',
       data: {
@@ -385,6 +422,8 @@
         titulo_ventana: '',
         registroHash: '',
         buscador: '',
+        usuario: '',
+        password: '',
         registro_actual: {
           id: -1,
           titulo: '',
@@ -401,7 +440,8 @@
             "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
             "procedimiento": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nrdona.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsuo -i -u ures\n. j-ir.sh alp\ncd incilo\nebp\n```\n\n",
             "titulo": "Cancelar orden de entrada SILO",
-            "etiquetas": "mga, silo, recepcion"
+            "etiquetas": "mga, silo, recepcion",
+            "autor": "jrgavilanes"
           },
           {
             "id": 2,
@@ -409,7 +449,8 @@
             "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
             "procedimiento": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nridona.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsuo -i -u urtes\n. j-ir.sh alp\ncd inci_si\nedp\n```\n\n",
             "titulo": "Cancelar orden de entrada SILO 2",
-            "etiquetas": "mga, silo, recepcion"
+            "etiquetas": "mga, silo, recepcion",
+            "autor": "jrgavilanes"
           },
           {
             "id": 3,
@@ -417,12 +458,18 @@
             "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
             "procedimiento": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nribna.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsdo -i -u urtes\n. j-ir.sh alp\ncd ini_sio\nedp\n```\n\n",
             "titulo": "Cancelar orden de entrada SILO 3",
-            "etiquetas": "mga, silo, recepcion"
+            "etiquetas": "mga, silo, recepcion",
+            "autor": "jrgavilanes"
           }
         ]
       },
       mounted(){
         this.tags = this.tags.sort();
+
+        if (this.password !== this.usuario || this.password === '') {
+          this.estado = 'login';
+        }
+
       },
       computed: {
         vista: function () {
@@ -436,10 +483,21 @@
           } else {
             return _.orderBy(this.registros, ['id'], ['desc']);
           }
-
         }
       },
       methods: {
+        logout() {
+          this.usuario = "";
+          this.password = "";
+          this.estado = "login";
+        },
+        validar(){
+          if (this.password === this.usuario && this.password !== '') {
+            this.estado = 'showAll';
+          } else {
+            this.errorMessage = '<li>Usuario no válido</li>';
+          }
+        },
         addTag(tag) {
           if (this.registro_actual.etiquetas === '') {
             this.registro_actual.etiquetas += tag;
@@ -448,15 +506,11 @@
           }
         },
         upsertRecord() {
-
-
-
           let reg = {};
-
           //limpia etiquetas
           this.registro_actual.etiquetas = this.registro_actual.etiquetas.trim();
           this.registro_actual.etiquetas = this.registro_actual.etiquetas.replace(/,$/, ""); //quito la última coma si existe.
-          
+
           let aux = _.split(this.registro_actual.etiquetas, ",");
           aux = _.map(aux, _.trim);
           aux = _.map(aux, _.toLower);
@@ -465,67 +519,55 @@
           });
           aux = _.uniq(aux);
           let tags = aux;
-
           this.registro_actual.etiquetas = tags.join(", ");
-          
-          
+
 
           //Comprueba campos
-
           // Este campo ha de ser único en la BD
           if (this.registro_actual.titulo === '') {
             this.errorMessage = '<li>Titulo no puede estar vacío</li>';
           }
-
           if (this.registro_actual.etiquetas === '') {
             this.errorMessage += '<li>Las etiquetas no pueden estar vacias</li>';
           }
-
           if (myGlobal.sintomas.value() === '') {
             this.errorMessage += '<li>El campo de síntomas no puede estar vacío</li>';
           }
-
           if (myGlobal.procedimiento.value() === '') {
             this.errorMessage += '<li>El campo de procedimiento no puede estar vacío</li>';
           }
-
           if (this.errorMessage === '') {
-
             //Actualizo tabla tags
             this.tags = _.union(this.tags, tags);
             this.tags = _.sortedUniq(this.tags);
             this.tags = this.tags.sort();
-            
-            
-            //console.log(this.tags);
 
+
+            //console.log(this.tags);
             aux = "#" + aux.join(", #");
             aux = aux.trim()
             //this.registro_actual.etiquetas = aux;
-           
-                                 
+
+
             if (this.titulo_ventana === 'Crear documento') {
-            
+
               reg.etiquetas = aux;
               reg.titulo = this.registro_actual.titulo;
               reg.incidencias = this.registro_actual.incidencias;
               reg.sintomas = myGlobal.sintomas.value();
               reg.procedimiento = myGlobal.procedimiento.value();
-          
-              
+              reg.autor = this.usuario;
+
+
               reg.id = _.maxBy(this.registros, 'id').id + 1;
               this.registro_actual.id = reg.id;
-
               this.registros.push(reg);
               this.notificacion = 'El documento ha sido creado correctamente.';
               setTimeout(() => {
                 this.notificacion = '';
               }, 2000);
-
               this.titulo_ventana = 'Editar documento';
-
             } else {
-
               let id_registro = this.registro_actual.id;
               id_registro = _.findIndex(this.registros, function(o) { return o.id == id_registro; });
               this.registros[id_registro].etiquetas = aux;
@@ -533,96 +575,61 @@
               this.registros[id_registro].incidencias = this.registro_actual.incidencias;
               this.registros[id_registro].sintomas = myGlobal.sintomas.value();
               this.registros[id_registro].procedimiento = myGlobal.procedimiento.value();
-
               this.notificacion = 'El documento ha sido editado correctamente.';
               setTimeout(() => {
                 this.notificacion = '';
               }, 2000);
-
-
             }
           }
 
-         
           this.registroHash = this.registro_actual.titulo +
             this.registro_actual.incidencias +
             this.registro_actual.etiquetas +
             myGlobal.sintomas.value() +
             myGlobal.procedimiento.value();
-
-
-
         },
         questionExitFromInsert() {
-
-
           if (this.titulo_ventana === 'Crear documento') {
-
             if (this.registro_actual.titulo !== '' ||
               this.registro_actual.etiquetas !== '' ||
               this.registro_actual.incidencias !== '' ||
               myGlobal.sintomas.value() !== '' ||
               myGlobal.procedimiento.value() !== ''
-
             ) {
-
               this.confirmacion = "¿Deseas salir sin guardar cambios?";
-
             } else {
-
               this.exitFromInsert();
-
             }
-
           }
-
           if (this.titulo_ventana === 'Editar documento') {
-
             if (this.registroHash !== this.registro_actual.titulo +
               this.registro_actual.incidencias +
               this.registro_actual.etiquetas +
               myGlobal.sintomas.value() +
               myGlobal.procedimiento.value()
-
             ) {
-
               this.confirmacion = "¿Deseas salir sin guardar cambios?";
-
             } else {
-
               this.exitFromInsert();
-
             }
-
           }
-
         },
-
         exitFromInsert() {
           this.registro_actual.titulo = '';
           this.registro_actual.etiquetas = '';
           this.registro_actual.incidencias = '';
           myGlobal.sintomas.value("");
           myGlobal.procedimiento.value("");
-
-
           this.confirmacion = '';
-
           this.estado = 'showAll';
-
           this.topScroll();
-
-
         },
         getDocument(title) {
-
           // title = "Cancelar orden de entrada SILO";
           // this.registros.filter((title)=>{
           //   return titulo === title;
           // });
-
           this.topScroll();
-
           for (let i = 0; i < this.registros.length; i++) {
             if (this.registros[i].titulo === title) {
               this.registro_actual.titulo = this.registros[i].titulo;
@@ -633,14 +640,10 @@
               break;
             }
           }
-
           this.estado = 'showDocument';
-
         },
         editDocument(title) {
-
           this.topScroll();
-
           for (let i = 0; i < this.registros.length; i++) {
             if (this.registros[i].titulo === title) {
               this.registro_actual.id = this.registros[i].id;
@@ -652,43 +655,32 @@
               break;
             }
           }
-
           myGlobal.sintomas.value(this.registro_actual.sintomas);
           myGlobal.procedimiento.value(this.registro_actual.procedimiento);
-
           setTimeout(() => {
             myGlobal.sintomas.codemirror.refresh();
             myGlobal.procedimiento.codemirror.refresh();
           }, 100);
-
           this.titulo_ventana = "Editar documento"
           this.estado = 'upsertDocument';
-
-
           this.registroHash = this.registro_actual.titulo +
             this.registro_actual.incidencias +
             this.registro_actual.etiquetas +
             myGlobal.sintomas.value() +
             myGlobal.procedimiento.value();
-
         },
         createDocument() {
-
           this.topScroll();
-
           // myGlobal.sintomas.value("");
           // myGlobal.procedimiento.value("");
-
           this.registro_actual.id = -1;
           this.registro_actual.titulo = "";
           this.registro_actual.incidencias = "";
           this.registro_actual.etiquetas = "";
           this.registro_actual.sintomas = "";
           this.registro_actual.procedimiento = "";
-
           this.titulo_ventana = "Crear documento"
           this.estado = 'upsertDocument';
-
         },
         topScroll() {
           document.body.scrollTop = 0; // For Safari
@@ -696,8 +688,6 @@
         }
       }
     });
-
-
   </script>
 
 </body>
