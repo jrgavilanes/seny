@@ -157,7 +157,7 @@
                 <span class="is-pulled-left" style="font-size: .8em;">
                   <a title="Mostrar documentos de este autor" href="#">@{{registro.autor}}</a>
                 </span>
-                <span class="is-pulled-right" style="font-size: .8em;">Creado el 12 Enero de 2018</span>
+                <span class="is-pulled-right" style="font-size: .8em;">Creado el {{now()}}</span>
                 <br>
                 <strong>
                   <em>Síntomas:</em>
@@ -390,12 +390,21 @@
 
   </div>
   <!-- app -->
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/locale/es.js"></script>
   <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.4/lodash.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vue"></script>
   <script>
     // <!-- <editor-wapo name='sintomas'></editor-wapo> -->
+
+    moment.locale('es');
+    // console.log(moment().format().substr(0,19).replace("T", " "));
+
+    //2018-02-04T19:35:28
+    
+
+
     let myGlobal = {};
     Vue.component('sintomas', {
       template: `<textarea id="sintomas" cols="30" rows="10" required placeholder='Cuándo lo hago?'></textarea>`,
@@ -486,6 +495,9 @@
         }
       },
       methods: {
+        now(){
+          return moment().format().substr(0,19).replace("T", " ");
+        },
         logout() {
           this.usuario = "";
           this.password = "";
