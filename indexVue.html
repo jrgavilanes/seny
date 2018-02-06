@@ -19,23 +19,30 @@
         display: none !important;
       }
     }
+
     .tag {
       margin: .2em;
       cursor: pointer;
     }
+
     /* https://www.w3schools.com/cssref/css_default_values.asp */
+
     .block {
       margin: 1em;
     }
+
     .hero {
       margin-bottom: 1em;
     }
+
     .invisible {
       display: none;
     }
+
     .card {
       margin-bottom: 1em;
     }
+
     .floatButton {
       position: fixed;
       width: 60px;
@@ -49,6 +56,7 @@
       vertical-align: middle;
       box-shadow: 2px 2px 3px #999;
     }
+
     .notificacion {
       position: fixed;
       z-index: 1000;
@@ -81,11 +89,11 @@
       <div class="container">
 
         <div class="columns">
-          
+
           <div class="column"></div>
-          
+
           <div class="column is-4">
-            
+
             <div class="block">
               <div class="field">
                 <label class="label">Usuario</label>
@@ -113,14 +121,14 @@
             </div>
 
           </div>
-          
-          <div class="column"></div>
-          
-        </div>
-        
 
-        
-        
+          <div class="column"></div>
+
+        </div>
+
+
+
+
       </div>
       <!-- container -->
 
@@ -161,10 +169,10 @@
           <div v-for="registro in vista" class="card">
             <header class="card-header">
               <p class="card-header-title">
-                <a title="Abrir documento" @click="getDocument(registro.titulo)">[#{{registro.id}}] {{registro.titulo}}</a>
+                <a title="Abrir documento" @click="getDocument(registro.id)">[#{{registro.id}}] {{registro.titulo}}</a>
               </p>
               <a href="#" v-show="registro.autor=='@'+usuario" class="card-header-icon" aria-label="more options">
-                <span class="icon" title="Editar documento" @click="editDocument(registro.titulo)">
+                <span class="icon" title="Editar documento" @click="editDocument(registro.id)">
                   <i class="fa fa-pencil is-size-4" aria-hidden="true"></i>
                 </span>
               </a>
@@ -174,7 +182,9 @@
                 <span class="is-pulled-left" style="font-size: .8em;">
                   <a title="Mostrar documentos de este autor" @click="filter(registro.autor)">{{registro.autor}}</a>
                 </span>
-                <span class="is-pulled-right" style="font-size: .8em;"><em>Creado {{moment(registro.createdAt,"YYYY-MMDD h:mm").fromNow()}}</em></span>
+                <span class="is-pulled-right" style="font-size: .8em;">
+                  <em>Creado {{moment(registro.createdAt,"YYYY-MMDD h:mm").fromNow()}}</em>
+                </span>
                 <br>
                 <strong>
                   <em>Síntomas:</em>
@@ -183,9 +193,12 @@
                 <div style="margin-left: 2em;" v-html="SimpleMDE.prototype.markdown(registro.sintomas)"></div>
 
                 <br>
-                <span class="is-pulled-right" style="font-size: .8em;"><em>Última actualización {{moment(registro.updatedAt,"YYYY-MMDD h:mm").fromNow()}}</em></span>
-                <hr> 
+                <span class="is-pulled-right" style="font-size: .8em;">
+                  <em>Última actualización {{moment(registro.updatedAt,"YYYY-MMDD h:mm").fromNow()}}</em>
+                </span>
+                <hr>
                 <a @click="filter(tag)" v-for="tag in registro.etiquetas.split(', ')">{{tag}} </a>
+                <br>Compartir documento: {{url.origin+url.pathname+'?doc='+convertToSlug(registro.titulo.trim())}}
 
 
                 <br>
@@ -228,15 +241,16 @@
       </section>
 
       <div class="container">
-        
-         
+
+
 
         <div class="block" style="margin-top: 1em;">
-          
+
           <div v-show="titulo_ventana==='Editar documento'">[#{{registro_actual.id}}]</div>
-          <button v-show="titulo_ventana==='Editar documento' && registro_actual.autor=='@'+usuario" title="Borrar documento" class="delete is-pulled-right" @click="deleteRecord(registro_actual.id, '@'+usuario)"></button>
-          
-          
+          <button v-show="titulo_ventana==='Editar documento' && registro_actual.autor=='@'+usuario" title="Borrar documento" class="delete is-pulled-right"
+            @click="deleteRecord(registro_actual.id, '@'+usuario)"></button>
+
+
           <div class="field">
             <label class="label">Qué soluciona este documento? *</label>
             <div class="control">
@@ -293,7 +307,7 @@
               </p>
             </div>
 
-           
+
             <div class="level-right">
               <p class="control">
                 <a id="guardar-mensaje-btn" class="button is-info" @click="upsertRecord()">
@@ -325,7 +339,8 @@
             <h2 class="subtitle" style="margin-top: .1em;">
               Mostrar documento
             </h2>
-            Hola {{usuario}}! <a @click="logout()">Cerrar sesión</a>
+            Hola {{usuario}}!
+            <a @click="logout()">Cerrar sesión</a>
           </div>
         </div>
       </section>
@@ -371,36 +386,38 @@
             Volver atrás
           </a>
         </p>
-        
-        
+
+
         <div class="block no-print">
           <hr>
           <div class="field">
             <label class="label">¿Tienes algo que decir?</label>
-            
+
             <textarea class="textarea" v-model="comentario" placeholder="Escribe tu comentario"></textarea>
-            
+
           </div>
           <p v-show="comentario.trim()!=''" class="control is-pulled-right" style="margin: .5em;">
             <a class="button is-info no-print" @click="insertComment()">
               Enviar comentario
             </a>
-            
-          </p>        
-          
-          <br><br>
-        
+
+          </p>
+
+          <br>
+          <br>
+
           <div v-show="registro_actual.comentarios.length>0" class="is-size-4">COMENTARIOS</div>
 
           <div v-for="comentario in registro_actual.comentarios" class="notification no-print is-blue" style="margin: 1em; ">
             <button v-show="'@'+usuario == comentario.autor" class="delete" @click="deleteComment(comentario.id)"></button>
-            <p>de <strong>{{comentario.autor}}</strong> {{moment(comentario.createdAt,"YYYY-MMDD h:mm").fromNow()}}</p>
+            <p>de
+              <strong>{{comentario.autor}}</strong> {{moment(comentario.createdAt,"YYYY-MMDD h:mm").fromNow()}}</p>
             {{comentario.mensaje}}
           </div>
 
-      </div>
-        
-      
+        </div>
+
+
 
       </div>
       <!-- container -->
@@ -495,6 +512,8 @@
         usuario: '',
         password: '',
         comentario: '',
+        url_required: '',
+        url: {},
         registro_actual: {
           id: -1,
           titulo: '',
@@ -520,19 +539,19 @@
                 "id": 1,
                 "autor": "@nano",
                 "mensaje": "pues mola mogollón",
-                "createdAt":  "2017-07-23 13:45"
+                "createdAt": "2017-07-23 13:45"
               },
               {
                 "id": 2,
                 "autor": "@nana",
                 "mensaje": "pues eso es bla bla bla",
-                "createdAt":  "2017-07-23 13:45"
+                "createdAt": "2017-07-23 13:45"
               }
-              
+
             ],
             "createdAt": "2017-07-23 13:45",
             "updatedAt": "2017-07-23 13:45"
-            
+
           },
           {
             "id": 1001,
@@ -547,15 +566,15 @@
                 "id": 1,
                 "autor": "@xx",
                 "mensaje": "pues mola mogollón",
-                "createdAt":  "2017-07-23 13:45"
+                "createdAt": "2017-07-23 13:45"
               },
               {
                 "id": 2,
                 "autor": "@ter",
                 "mensaje": "pues eso es bla bla bla",
-                "createdAt":  "2017-07-23 13:45"
+                "createdAt": "2017-07-23 13:45"
               }
-              
+
             ],
             "createdAt": "2017-07-24 13:45",
             "updatedAt": "2017-07-24 13:45"
@@ -574,12 +593,30 @@
           }
         ]
       },
-      mounted(){
+      mounted() {
         this.tags = this.tags.sort();
 
         if (this.password !== this.usuario || this.password === '') {
           this.estado = 'login';
         }
+
+        //console.log(.searchParams.get("doc"));
+
+        let url = new URL(window.location.href);
+        this.url = url;
+        if (url.search.trim().startsWith("?doc=")) {
+          url = url.search.trim();
+          url = url.substr(5, url.length - 5);
+          this.url_required = url;
+        } else {
+          this.url_required = "";
+        }
+
+        console.log("quiero ir a", this.url_required);
+        //console.log("busco" + url);
+        //console.log(url.searchParams("doc"));
+
+        // console.log(window.location.pathname);
 
       },
       computed: {
@@ -598,9 +635,9 @@
 
               let chivato = busca.length;
 
-              for (let i = 0; i<busca.length; i++) {
+              for (let i = 0; i < busca.length; i++) {
 
-                if ( ''.concat('#'+o.id,o.titulo,o.autor,o.etiquetas,o.incidencias,o.sintomas,o.procedimiento).toLowerCase().includes(busca[i])) chivato--;
+                if (''.concat('#' + o.id, o.titulo, o.autor, o.etiquetas, o.incidencias, o.sintomas, o.procedimiento).toLowerCase().includes(busca[i])) chivato--;
 
               }
 
@@ -619,64 +656,84 @@
         }
       },
       methods: {
-        insertComment(){
-          
+        convertToSlug(text) {
+
+          let Text = text.toLowerCase().replace(/[^\w ]+/g, '').replace(/ +/g, '-');
+
+          Text = Text.replace(new RegExp(/[àáâãäå]/g), "a");
+          Text = Text.replace(new RegExp(/[èéêë]/g), "e");
+          Text = Text.replace(new RegExp(/[ìíîï]/g), "i");
+          Text = Text.replace(new RegExp(/ñ/g), "ny");
+          Text = Text.replace(new RegExp(/[òóôõö]/g), "o");
+          Text = Text.replace(new RegExp(/[ùúûü]/g), "u");
+
+          return Text;
+
+        },
+        insertComment() {
+
           let x = this.registro_actual.id;
-          
-          let i = _.findIndex(this.registros, function(o) { return o.id == x; });
-          
-          
-          let myComentario = {};   
-                    
+
+          let i = _.findIndex(this.registros, function (o) { return o.id == x; });
+
+
+          let myComentario = {};
+
           try {
             myComentario.id = _.maxBy(this.registros[i].comentarios, 'id').id;
-          } catch(e) {
+          } catch (e) {
             myComentario.id = 0;
-          }     
-          
+          }
+
           myComentario.id++;
-          
-          
+
+
           myComentario.mensaje = this.comentario;
           myComentario.createdAt = this.now();
-          myComentario.autor = '@'+this.usuario;
-          
-          
+          myComentario.autor = '@' + this.usuario;
+
+
           this.registros[i].comentarios.push(myComentario);
           this.registro_actual.comentarios.push(myComentario);
-          
+
           this.comentario = "";
-          
-          
+
+
         },
-        deleteComment(id){
-          
-           if (confirm("¿Deseas borrar el comentario?")) {
-             
-             let x = this.registro_actual.id;
+        deleteComment(id) {
 
-             let i = _.findIndex(this.registros, function(o) { return o.id == x; });
+          if (confirm("¿Deseas borrar el comentario?")) {
 
-             x = _.findIndex(this.registros[i].comentarios, function(o) { return o.id == id; });
+            let x = this.registro_actual.id;
 
-             this.registros[i].comentarios.splice(x,1);
+            let i = _.findIndex(this.registros, function (o) { return o.id == x; });
 
-             this.registro_actual.comentarios.splice(x,1);
-             
-           }     
-          
+            x = _.findIndex(this.registros[i].comentarios, function (o) { return o.id == id; });
+
+            this.registros[i].comentarios.splice(x, 1);
+
+            this.registro_actual.comentarios.splice(x, 1);
+
+          }
+
         },
-        now(){
-          return moment().format().substr(0,19).replace("T", " ");
+        now() {
+          return moment().format().substr(0, 19).replace("T", " ");
         },
         logout() {
           this.usuario = "";
           this.password = "";
           this.estado = "login";
         },
-        validar(){
+        validar() {
           if (this.password === this.usuario && this.password !== '') {
-            this.estado = 'showAll';
+            if (this.url_required == "") {
+              this.estado = 'showAll';
+            } else {
+              //alert("quiere ir a " + this.url_required);
+              this.getDocumentBySlug(this.url_required.trim());
+            }
+
           } else {
             this.errorMessage = '<li>Usuario no válido</li>';
           }
@@ -688,19 +745,19 @@
             this.registro_actual.etiquetas += ", " + tag;
           }
         },
-        filter(filtro){
+        filter(filtro) {
           this.buscador = filtro;
         },
         deleteRecord(id, usuario) {
 
           if (confirm("¿Deseas borrar el documento?")) {
 
-            let id_registro = _.findIndex(this.registros, function(o) { return o.id == id && o.autor == usuario; });
+            let id_registro = _.findIndex(this.registros, function (o) { return o.id == id && o.autor == usuario; });
 
-            if (id_registro>=0) {             
+            if (id_registro >= 0) {
               this.registros.splice(id_registro, 1);
               this.showAll();
-            }  
+            }
           }
 
 
@@ -758,9 +815,9 @@
 
               // El titulo ha de ser único en la BD
               let t = this.registro_actual.titulo;
-              let i = _.findIndex(this.registros, function(o) { return o.titulo == t; });
+              let i = _.findIndex(this.registros, function (o) { return o.titulo == t; });
 
-              if (i>=0) {
+              if (i >= 0) {
                 this.errorMessage += '<li>Ya existe un documento con el mismo título</li>';
               } else {
                 reg.etiquetas = aux;
@@ -768,7 +825,7 @@
                 reg.incidencias = this.registro_actual.incidencias;
                 reg.sintomas = myGlobal.sintomas.value();
                 reg.procedimiento = myGlobal.procedimiento.value();
-                reg.autor = "@"+this.usuario;
+                reg.autor = "@" + this.usuario;
                 reg.createdAt = this.now();
                 reg.updatedAt = this.now();
 
@@ -785,12 +842,12 @@
                   this.notificacion = '';
                 }, 2000);
 
-              }          
+              }
 
             } else {
 
               let id_registro = this.registro_actual.id;
-              id_registro = _.findIndex(this.registros, function(o) { return o.id == id_registro; });
+              id_registro = _.findIndex(this.registros, function (o) { return o.id == id_registro; });
               this.registros[id_registro].etiquetas = aux;
               this.registros[id_registro].titulo = this.registro_actual.titulo;
               this.registros[id_registro].incidencias = this.registro_actual.incidencias;
@@ -846,23 +903,23 @@
           myGlobal.sintomas.value("");
           myGlobal.procedimiento.value("");
           this.confirmacion = '';
-          this.buscador='';
+          this.buscador = '';
           this.estado = 'showAll';
           this.topScroll();
         },
-        showAll(){
+        showAll() {
           this.estado = '';
           this.buscador = '';
           this.comentario = '';
           setTimeout(() => {
-            this.estado='showAll';
+            this.estado = 'showAll';
             this.topScroll();
-          }, 10);      
+          }, 10);
         },
-        showTags(tags){
+        showTags(tags) {
           tags = tags.split(", ");
           let salida = "";
-          for (let i = 0; i<tags.length; i++) {
+          for (let i = 0; i < tags.length; i++) {
 
             salida += ` <a @click="alert($(tags[i]))">$(tags[i])</a>`;
 
@@ -871,11 +928,11 @@
           return salida;
 
         },
-        getDocument(title) {
+        getDocument(id) {
 
           this.topScroll();
 
-          let i = _.findIndex(this.registros, function(o) { return o.titulo == title; });
+          let i = _.findIndex(this.registros, function (o) { return o.id == id; });
 
           if (i >= 0) {
 
@@ -886,26 +943,54 @@
             this.registro_actual.sintomas = this.registros[i].sintomas;
             this.registro_actual.procedimiento = this.registros[i].procedimiento;
             this.registro_actual.autor = this.registros[i].autor;
-            
+
             this.registro_actual.comentarios = [];
-            
-            for (let ii = 0; ii< this.registros[i].comentarios.length; ii++) {
+
+            for (let ii = 0; ii < this.registros[i].comentarios.length; ii++) {
               //console.log(this.registro_actual.comentarios);
               //console.log(this.registros[i].comentarios[ii]);
               this.registro_actual.comentarios.push(this.registros[i].comentarios[ii]);
             }
-                        
 
-            this.estado = 'showDocument';  
+
+            this.estado = 'showDocument';
 
           }
 
         },
-        editDocument(title) {
+        getDocumentBySlug(slug) {
+
+          let i = 0;
+          let encontrado = false;
+
+
+          for (i = 0; i < this.registros.length; i++) {
+
+            if (this.convertToSlug(this.registros[i].titulo) == slug) {
+              encontrado = true;
+              break;
+            }
+
+          }
+
+          if (encontrado) {
+            
+            this.getDocument(this.registros[i].id);
+            
+          } else {
+
+            this.showAll()
+
+          }
+
+
+
+        },
+        editDocument(id) {
 
           this.topScroll();
 
-          let i = _.findIndex(this.registros, function(o) { return o.titulo == title; });
+          let i = _.findIndex(this.registros, function (o) { return o.id == id; });
 
           if (i >= 0) {
 
@@ -945,14 +1030,14 @@
         },
         createDocument() {
           this.topScroll();
-          
+
           myGlobal.sintomas.value("");
           myGlobal.procedimiento.value("");
           setTimeout(() => {
-              myGlobal.sintomas.codemirror.refresh();
-              myGlobal.procedimiento.codemirror.refresh();
+            myGlobal.sintomas.codemirror.refresh();
+            myGlobal.procedimiento.codemirror.refresh();
           }, 100);
-          
+
           this.registro_actual.id = -1;
           this.registro_actual.titulo = "";
           this.registro_actual.incidencias = "";
