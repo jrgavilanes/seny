@@ -42,7 +42,7 @@
       height: 60px;
       bottom: 20px;
       right: 20px;
-      background-color: rgba(20, 100, 5, 0.9);
+      background-color: rgba(10, 50, 255, 0.9);
       color: #FFF;
       border-radius: 50px;
       text-align: center;
@@ -79,33 +79,48 @@
       </section>
 
       <div class="container">
+
+        <div class="columns">
+          
+          <div class="column"></div>
+          
+          <div class="column is-4">
+            
+            <div class="block">
+              <div class="field">
+                <label class="label">Usuario</label>
+                <div class="control">
+                  <input v-model="usuario" @keyup.enter="validar()" class="input" type="text" placeholder="Usuario">
+                </div>
+              </div>
+            </div>
+
+            <div class="block">
+              <div class="field">
+                <label class="label">Password</label>
+                <div class="control">
+                  <input type="password" @keyup.enter="validar()" v-model="password" class="input" type="text" placeholder="Password">
+                </div>
+              </div>
+            </div>
+
+            <div class="block">
+              <p class="control is-pulled-right">
+                <a id="guardar-mensaje-btn" class="button is-info" @click="validar()">
+                  Validar
+                </a>
+              </p>
+            </div>
+
+          </div>
+          
+          <div class="column"></div>
+          
+        </div>
         
-          <div class="block">
-            <div class="field">
-              <label class="label">Usuario</label>
-              <div class="control">
-                <input v-model="usuario" @keyup.enter="validar()" class="input" type="text" placeholder="Usuario">
-              </div>
-            </div>
-          </div>
-      
-          <div class="block">
-            <div class="field">
-              <label class="label">Password</label>
-              <div class="control">
-                <input type="password" @keyup.enter="validar()" v-model="password" class="input" type="text" placeholder="Password">
-              </div>
-            </div>
-          </div>
-      
-          <div class="block">
-            <p class="control">
-              <a id="guardar-mensaje-btn" class="button is-primary" @click="validar()">
-                Validar
-              </a>
-            </p>
-          </div>
-       
+
+        
+        
       </div>
       <!-- container -->
 
@@ -118,8 +133,10 @@
         <div class="hero-body">
           <div class="container">
             <h1 class="title">
-              <i class="fa fa-hand-spock-o" aria-hidden="true"></i>
-              <i>Seny</i>
+              <a @click="showAll()" title="Mostrar todos los documentos">
+                <i class="fa fa-hand-spock-o" aria-hidden="true"></i>
+                <i>Seny</i>
+              </a>
             </h1>
             <h2 class="subtitle" style="margin-top: .1em;">
               <div class="field has-addons">
@@ -133,7 +150,7 @@
                 </div>
               </div>
             </h2>
-            Hola {{usuario}}! <a @click="logout()">Cerrar sesión</a>
+            <a @click="logout()" title="Salir">Cerrar sesión @{{usuario}}</a>
           </div>
         </div>
       </section>
@@ -144,9 +161,9 @@
           <div v-for="registro in vista" class="card">
             <header class="card-header">
               <p class="card-header-title">
-                <a title="Abrir documento" @click="getDocument(registro.titulo)">{{registro.titulo}}</a>
+                <a title="Abrir documento" @click="getDocument(registro.titulo)">[#{{registro.id}}] {{registro.titulo}}</a>
               </p>
-              <a href="#" v-show="registro.autor==usuario" class="card-header-icon" aria-label="more options">
+              <a href="#" v-show="registro.autor=='@'+usuario" class="card-header-icon" aria-label="more options">
                 <span class="icon" title="Editar documento" @click="editDocument(registro.titulo)">
                   <i class="fa fa-pencil is-size-4" aria-hidden="true"></i>
                 </span>
@@ -155,9 +172,9 @@
             <div class="card-content">
               <div class="content">
                 <span class="is-pulled-left" style="font-size: .8em;">
-                  <a title="Mostrar documentos de este autor" href="#">@{{registro.autor}}</a>
+                  <a title="Mostrar documentos de este autor" @click="filter(registro.autor)">{{registro.autor}}</a>
                 </span>
-                <span class="is-pulled-right" style="font-size: .8em;">Creado el {{now()}}</span>
+                <span class="is-pulled-right" style="font-size: .8em;"><em>Creado {{moment(registro.createdAt,"YYYY-MMDD h:mm").fromNow()}}</em></span>
                 <br>
                 <strong>
                   <em>Síntomas:</em>
@@ -165,7 +182,12 @@
                 <br>
                 <div style="margin-left: 2em;" v-html="SimpleMDE.prototype.markdown(registro.sintomas)"></div>
 
-                <hr> {{registro.etiquetas}}
+                <br>
+                <span class="is-pulled-right" style="font-size: .8em;"><em>Última actualización {{moment(registro.updatedAt,"YYYY-MMDD h:mm").fromNow()}}</em></span>
+                <hr> 
+                <a @click="filter(tag)" v-for="tag in registro.etiquetas.split(', ')">{{tag}} </a>
+
+
                 <br>
 
               </div>
@@ -200,14 +222,21 @@
             <h2 class="subtitle" style="margin-top: .1em;">
               {{titulo_ventana}}
             </h2>
-            Hola {{usuario}}! <a @click="logout()">Cerrar sesión</a>
+            <a @click="logout()">Desconectar @{{usuario}}</a>
           </div>
         </div>
       </section>
 
       <div class="container">
+        
+         
 
         <div class="block" style="margin-top: 1em;">
+          
+          <div v-show="titulo_ventana==='Editar documento'">[#{{registro_actual.id}}]</div>
+          <button v-show="titulo_ventana==='Editar documento' && registro_actual.autor=='@'+usuario" title="Borrar documento" class="delete is-pulled-right" @click="deleteRecord(registro_actual.id, '@'+usuario)"></button>
+          
+          
           <div class="field">
             <label class="label">Qué soluciona este documento? *</label>
             <div class="control">
@@ -263,9 +292,11 @@
                 </a>
               </p>
             </div>
+
+           
             <div class="level-right">
               <p class="control">
-                <a id="guardar-mensaje-btn" class="button is-primary" @click="upsertRecord()">
+                <a id="guardar-mensaje-btn" class="button is-info" @click="upsertRecord()">
                   Guardar
                 </a>
               </p>
@@ -277,7 +308,7 @@
       <!-- container -->
 
     </div>
-    <!-- newDocument -->
+    <!-- upsertDocument -->
 
 
     <div v-show="estado=='showDocument'">
@@ -286,7 +317,7 @@
         <div class="hero-body">
           <div class="container">
             <h1 class="title">
-              <a href="#" title="Volver">
+              <a @click="showAll()" title="Volver">
                 <i class="fa fa-hand-spock-o" aria-hidden="true"></i>
                 <i>Seny</i>
               </a>
@@ -310,7 +341,7 @@
           <strong>
             <span class="is-size-4">Título: </span>
           </strong>
-          {{registro_actual.titulo}}
+          [#{{registro_actual.id}}] {{registro_actual.titulo}}
           <br>
           <strong>
             <span class="is-size-4">Incidencia/s: </span>
@@ -336,10 +367,40 @@
 
         <br>
         <p class="control" style="margin: .5em;">
-          <a class="button is-blue no-print" @click="estado='showAll';topScroll();">
-            Volver
+          <a class="button is-warning no-print" @click="showAll()">
+            Volver atrás
           </a>
         </p>
+        
+        
+        <div class="block no-print">
+          <hr>
+          <div class="field">
+            <label class="label">¿Tienes algo que decir?</label>
+            
+            <textarea class="textarea" v-model="comentario" placeholder="Escribe tu comentario"></textarea>
+            
+          </div>
+          <p v-show="comentario.trim()!=''" class="control is-pulled-right" style="margin: .5em;">
+            <a class="button is-info no-print" @click="insertComment()">
+              Enviar comentario
+            </a>
+            
+          </p>        
+          
+          <br><br>
+        
+          <div v-show="registro_actual.comentarios.length>0" class="is-size-4">COMENTARIOS</div>
+
+          <div v-for="comentario in registro_actual.comentarios" class="notification no-print is-blue" style="margin: 1em; ">
+            <button v-show="'@'+usuario == comentario.autor" class="delete" @click="deleteComment(comentario.id)"></button>
+            <p>de <strong>{{comentario.autor}}</strong> {{moment(comentario.createdAt,"YYYY-MMDD h:mm").fromNow()}}</p>
+            {{comentario.mensaje}}
+          </div>
+
+      </div>
+        
+      
 
       </div>
       <!-- container -->
@@ -402,7 +463,7 @@
     // console.log(moment().format().substr(0,19).replace("T", " "));
 
     //2018-02-04T19:35:28
-    
+
 
 
     let myGlobal = {};
@@ -433,42 +494,83 @@
         buscador: '',
         usuario: '',
         password: '',
+        comentario: '',
         registro_actual: {
           id: -1,
           titulo: '',
           incidencias: '',
           etiquetas: '',
           sintomas: '',
-          procedimiento: ''
+          procedimiento: '',
+          comentarios: [],
+          autor: ''
         },
         tags: ["mga", "silo", "recepcion", "otro", "ay"],
         registros: [
           {
-            "id": 1,
+            "id": 1000,
             "incidencias": "17R06396",
             "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
             "procedimiento": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nrdona.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsuo -i -u ures\n. j-ir.sh alp\ncd incilo\nebp\n```\n\n",
             "titulo": "Cancelar orden de entrada SILO",
-            "etiquetas": "mga, silo, recepcion",
-            "autor": "jrgavilanes"
+            "etiquetas": "#mga, #otra-cosa",
+            "autor": "@a",
+            "comentarios": [
+              {
+                "id": 1,
+                "autor": "@nano",
+                "mensaje": "pues mola mogollón",
+                "createdAt":  "2017-07-23 13:45"
+              },
+              {
+                "id": 2,
+                "autor": "@nana",
+                "mensaje": "pues eso es bla bla bla",
+                "createdAt":  "2017-07-23 13:45"
+              }
+              
+            ],
+            "createdAt": "2017-07-23 13:45",
+            "updatedAt": "2017-07-23 13:45"
+            
           },
           {
-            "id": 2,
+            "id": 1001,
             "incidencias": "17R06396",
             "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
             "procedimiento": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nridona.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsuo -i -u urtes\n. j-ir.sh alp\ncd inci_si\nedp\n```\n\n",
             "titulo": "Cancelar orden de entrada SILO 2",
-            "etiquetas": "mga, silo, recepcion",
-            "autor": "jrgavilanes"
+            "etiquetas": "#silo",
+            "autor": "@a",
+            "comentarios": [
+              {
+                "id": 1,
+                "autor": "@xx",
+                "mensaje": "pues mola mogollón",
+                "createdAt":  "2017-07-23 13:45"
+              },
+              {
+                "id": 2,
+                "autor": "@ter",
+                "mensaje": "pues eso es bla bla bla",
+                "createdAt":  "2017-07-23 13:45"
+              }
+              
+            ],
+            "createdAt": "2017-07-24 13:45",
+            "updatedAt": "2017-07-24 13:45"
           },
           {
-            "id": 3,
+            "id": 1002,
             "incidencias": "17R06396",
             "sintomas": "- Pasillos del Silo parados.\n- La paleta de entrada actual no corresponde con la paleta que físicamente está esperando.",
             "procedimiento": "Para quitar una orden del pulmón de entrada de un trasolo ( y que las otras se muevan a una posición), hay que conectarse al servidor:\n\n```\nribna.es\n```\n\nAcceder con nuestro propio usuario y posteriormente conectarse a urgentes:\n\n```\nsdo -i -u urtes\n. j-ir.sh alp\ncd ini_sio\nedp\n```\n\n",
             "titulo": "Cancelar orden de entrada SILO 3",
-            "etiquetas": "mga, silo, recepcion",
-            "autor": "jrgavilanes"
+            "etiquetas": "#recepcion",
+            "comentarios": [],
+            "autor": "@jrgavilanes",
+            "createdAt": "2017-07-25 13:45",
+            "updatedAt": "2017-07-25 13:45"
           }
         ]
       },
@@ -484,17 +586,86 @@
         vista: function () {
           //Trabajar más el buscador.
           if (this.buscador !== '') {
+
             let busca = this.buscador;
+            busca = busca.toLowerCase().trim().split(" ");
+
+
             let filtro = _.filter(this.registros, function (o) {
-              return o.titulo.toLowerCase().includes(busca.toLowerCase());
+
+              //return o.titulo.toLowerCase().includes(busca.toLowerCase());
+              //return ''.concat(o.id,o.titulo,o.autor,o.etiquetas,o.incidencias,o.sintomas,o.procedimiento).toLowerCase().includes(busca.toLowerCase());
+
+              let chivato = busca.length;
+
+              for (let i = 0; i<busca.length; i++) {
+
+                if ( ''.concat('#'+o.id,o.titulo,o.autor,o.etiquetas,o.incidencias,o.sintomas,o.procedimiento).toLowerCase().includes(busca[i])) chivato--;
+
+              }
+
+              return chivato === 0;
+
+
             });
+
             return _.orderBy(filtro, ['id'], ['desc']);
+
           } else {
+
             return _.orderBy(this.registros, ['id'], ['desc']);
+
           }
         }
       },
       methods: {
+        insertComment(){
+          
+          let x = this.registro_actual.id;
+          
+          let i = _.findIndex(this.registros, function(o) { return o.id == x; });
+          
+          
+          let myComentario = {};   
+                    
+          try {
+            myComentario.id = _.maxBy(this.registros[i].comentarios, 'id').id;
+          } catch(e) {
+            myComentario.id = 0;
+          }     
+          
+          myComentario.id++;
+          
+          
+          myComentario.mensaje = this.comentario;
+          myComentario.createdAt = this.now();
+          myComentario.autor = '@'+this.usuario;
+          
+          
+          this.registros[i].comentarios.push(myComentario);
+          this.registro_actual.comentarios.push(myComentario);
+          
+          this.comentario = "";
+          
+          
+        },
+        deleteComment(id){
+          
+           if (confirm("¿Deseas borrar el comentario?")) {
+             
+             let x = this.registro_actual.id;
+
+             let i = _.findIndex(this.registros, function(o) { return o.id == x; });
+
+             x = _.findIndex(this.registros[i].comentarios, function(o) { return o.id == id; });
+
+             this.registros[i].comentarios.splice(x,1);
+
+             this.registro_actual.comentarios.splice(x,1);
+             
+           }     
+          
+        },
         now(){
           return moment().format().substr(0,19).replace("T", " ");
         },
@@ -517,7 +688,25 @@
             this.registro_actual.etiquetas += ", " + tag;
           }
         },
+        filter(filtro){
+          this.buscador = filtro;
+        },
+        deleteRecord(id, usuario) {
+
+          if (confirm("¿Deseas borrar el documento?")) {
+
+            let id_registro = _.findIndex(this.registros, function(o) { return o.id == id && o.autor == usuario; });
+
+            if (id_registro>=0) {             
+              this.registros.splice(id_registro, 1);
+              this.showAll();
+            }  
+          }
+
+
+        },
         upsertRecord() {
+
           let reg = {};
           //limpia etiquetas
           this.registro_actual.etiquetas = this.registro_actual.etiquetas.trim();
@@ -535,7 +724,8 @@
 
 
           //Comprueba campos
-          // Este campo ha de ser único en la BD
+
+
           if (this.registro_actual.titulo === '') {
             this.errorMessage = '<li>Titulo no puede estar vacío</li>';
           }
@@ -548,6 +738,9 @@
           if (myGlobal.procedimiento.value() === '') {
             this.errorMessage += '<li>El campo de procedimiento no puede estar vacío</li>';
           }
+
+
+
           if (this.errorMessage === '') {
             //Actualizo tabla tags
             this.tags = _.union(this.tags, tags);
@@ -563,23 +756,39 @@
 
             if (this.titulo_ventana === 'Crear documento') {
 
-              reg.etiquetas = aux;
-              reg.titulo = this.registro_actual.titulo;
-              reg.incidencias = this.registro_actual.incidencias;
-              reg.sintomas = myGlobal.sintomas.value();
-              reg.procedimiento = myGlobal.procedimiento.value();
-              reg.autor = this.usuario;
+              // El titulo ha de ser único en la BD
+              let t = this.registro_actual.titulo;
+              let i = _.findIndex(this.registros, function(o) { return o.titulo == t; });
+
+              if (i>=0) {
+                this.errorMessage += '<li>Ya existe un documento con el mismo título</li>';
+              } else {
+                reg.etiquetas = aux;
+                reg.titulo = this.registro_actual.titulo;
+                reg.incidencias = this.registro_actual.incidencias;
+                reg.sintomas = myGlobal.sintomas.value();
+                reg.procedimiento = myGlobal.procedimiento.value();
+                reg.autor = "@"+this.usuario;
+                reg.createdAt = this.now();
+                reg.updatedAt = this.now();
 
 
-              reg.id = _.maxBy(this.registros, 'id').id + 1;
-              this.registro_actual.id = reg.id;
-              this.registros.push(reg);
-              this.notificacion = 'El documento ha sido creado correctamente.';
-              setTimeout(() => {
-                this.notificacion = '';
-              }, 2000);
-              this.titulo_ventana = 'Editar documento';
+                reg.id = _.maxBy(this.registros, 'id').id + 1;
+                this.registro_actual.id = reg.id;
+                this.registros.push(reg);
+
+
+                this.titulo_ventana = 'Editar documento';
+
+                this.notificacion = 'El documento ha sido creado correctamente.';
+                setTimeout(() => {
+                  this.notificacion = '';
+                }, 2000);
+
+              }          
+
             } else {
+
               let id_registro = this.registro_actual.id;
               id_registro = _.findIndex(this.registros, function(o) { return o.id == id_registro; });
               this.registros[id_registro].etiquetas = aux;
@@ -587,10 +796,13 @@
               this.registros[id_registro].incidencias = this.registro_actual.incidencias;
               this.registros[id_registro].sintomas = myGlobal.sintomas.value();
               this.registros[id_registro].procedimiento = myGlobal.procedimiento.value();
+              this.registros[id_registro].updatedAt = this.now();
+
               this.notificacion = 'El documento ha sido editado correctamente.';
               setTimeout(() => {
                 this.notificacion = '';
               }, 2000);
+
             }
           }
 
@@ -599,6 +811,7 @@
             this.registro_actual.etiquetas +
             myGlobal.sintomas.value() +
             myGlobal.procedimiento.value();
+
         },
         questionExitFromInsert() {
           if (this.titulo_ventana === 'Crear documento') {
@@ -633,58 +846,113 @@
           myGlobal.sintomas.value("");
           myGlobal.procedimiento.value("");
           this.confirmacion = '';
+          this.buscador='';
           this.estado = 'showAll';
           this.topScroll();
         },
-        getDocument(title) {
-          // title = "Cancelar orden de entrada SILO";
-          // this.registros.filter((title)=>{
-          //   return titulo === title;
-          // });
-          this.topScroll();
-          for (let i = 0; i < this.registros.length; i++) {
-            if (this.registros[i].titulo === title) {
-              this.registro_actual.titulo = this.registros[i].titulo;
-              this.registro_actual.incidencias = this.registros[i].incidencias;
-              this.registro_actual.etiquetas = this.registros[i].etiquetas;
-              this.registro_actual.sintomas = this.registros[i].sintomas;
-              this.registro_actual.procedimiento = this.registros[i].procedimiento;
-              break;
-            }
+        showAll(){
+          this.estado = '';
+          this.buscador = '';
+          this.comentario = '';
+          setTimeout(() => {
+            this.estado='showAll';
+            this.topScroll();
+          }, 10);      
+        },
+        showTags(tags){
+          tags = tags.split(", ");
+          let salida = "";
+          for (let i = 0; i<tags.length; i++) {
+
+            salida += ` <a @click="alert($(tags[i]))">$(tags[i])</a>`;
+
           }
-          this.estado = 'showDocument';
+
+          return salida;
+
+        },
+        getDocument(title) {
+
+          this.topScroll();
+
+          let i = _.findIndex(this.registros, function(o) { return o.titulo == title; });
+
+          if (i >= 0) {
+
+            this.registro_actual.id = this.registros[i].id;
+            this.registro_actual.titulo = this.registros[i].titulo;
+            this.registro_actual.incidencias = this.registros[i].incidencias;
+            this.registro_actual.etiquetas = this.registros[i].etiquetas;
+            this.registro_actual.sintomas = this.registros[i].sintomas;
+            this.registro_actual.procedimiento = this.registros[i].procedimiento;
+            this.registro_actual.autor = this.registros[i].autor;
+            
+            this.registro_actual.comentarios = [];
+            
+            for (let ii = 0; ii< this.registros[i].comentarios.length; ii++) {
+              //console.log(this.registro_actual.comentarios);
+              //console.log(this.registros[i].comentarios[ii]);
+              this.registro_actual.comentarios.push(this.registros[i].comentarios[ii]);
+            }
+                        
+
+            this.estado = 'showDocument';  
+
+          }
+
         },
         editDocument(title) {
+
           this.topScroll();
-          for (let i = 0; i < this.registros.length; i++) {
-            if (this.registros[i].titulo === title) {
-              this.registro_actual.id = this.registros[i].id;
-              this.registro_actual.titulo = this.registros[i].titulo;
-              this.registro_actual.incidencias = this.registros[i].incidencias;
-              this.registro_actual.etiquetas = this.registros[i].etiquetas.replace(/#/g, "");
-              this.registro_actual.sintomas = this.registros[i].sintomas;
-              this.registro_actual.procedimiento = this.registros[i].procedimiento;
-              break;
-            }
+
+          let i = _.findIndex(this.registros, function(o) { return o.titulo == title; });
+
+          if (i >= 0) {
+
+            this.registro_actual.id = this.registros[i].id;
+            this.registro_actual.titulo = this.registros[i].titulo;
+            this.registro_actual.incidencias = this.registros[i].incidencias;
+            this.registro_actual.etiquetas = this.registros[i].etiquetas.replace(/#/g, "");
+            this.registro_actual.sintomas = this.registros[i].sintomas;
+            this.registro_actual.procedimiento = this.registros[i].procedimiento;
+            this.registro_actual.autor = this.registros[i].autor;
+
+            myGlobal.sintomas.value(this.registro_actual.sintomas);
+            myGlobal.procedimiento.value(this.registro_actual.procedimiento);
+            setTimeout(() => {
+              myGlobal.sintomas.codemirror.refresh();
+              myGlobal.procedimiento.codemirror.refresh();
+            }, 100);
+
+            this.titulo_ventana = "Editar documento"
+            this.estado = 'upsertDocument';
+
+            this.registroHash = this.registro_actual.titulo +
+              this.registro_actual.incidencias +
+              this.registro_actual.etiquetas +
+              myGlobal.sintomas.value() +
+              myGlobal.procedimiento.value();
+
+          } else {
+
+
+            this.errorMessage += '<li>Documento no encontrado</li>';
+
+
           }
-          myGlobal.sintomas.value(this.registro_actual.sintomas);
-          myGlobal.procedimiento.value(this.registro_actual.procedimiento);
-          setTimeout(() => {
-            myGlobal.sintomas.codemirror.refresh();
-            myGlobal.procedimiento.codemirror.refresh();
-          }, 100);
-          this.titulo_ventana = "Editar documento"
-          this.estado = 'upsertDocument';
-          this.registroHash = this.registro_actual.titulo +
-            this.registro_actual.incidencias +
-            this.registro_actual.etiquetas +
-            myGlobal.sintomas.value() +
-            myGlobal.procedimiento.value();
+
+
         },
         createDocument() {
           this.topScroll();
-          // myGlobal.sintomas.value("");
-          // myGlobal.procedimiento.value("");
+          
+          myGlobal.sintomas.value("");
+          myGlobal.procedimiento.value("");
+          setTimeout(() => {
+              myGlobal.sintomas.codemirror.refresh();
+              myGlobal.procedimiento.codemirror.refresh();
+          }, 100);
+          
           this.registro_actual.id = -1;
           this.registro_actual.titulo = "";
           this.registro_actual.incidencias = "";
@@ -693,6 +961,7 @@
           this.registro_actual.procedimiento = "";
           this.titulo_ventana = "Crear documento"
           this.estado = 'upsertDocument';
+
         },
         topScroll() {
           document.body.scrollTop = 0; // For Safari
