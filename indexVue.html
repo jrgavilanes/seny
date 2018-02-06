@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
@@ -158,7 +157,7 @@
                 </div>
               </div>
             </h2>
-            <a @click="logout()" title="Salir">Cerrar sesión @{{usuario}}</a>
+            <a @click="logout()" title="Salir" class="is-size-7">Cerrar sesión @{{usuario}}</a>
           </div>
         </div>
       </section>
@@ -197,18 +196,15 @@
                   <em>Última actualización {{moment(registro.updatedAt,"YYYY-MMDD h:mm").fromNow()}}</em>
                 </span>
                 <hr>
-                <a @click="filter(tag)" v-for="tag in registro.etiquetas.split(', ')">{{tag}} </a>
-                <br>Compartir documento: {{url.origin+url.pathname+'?doc='+convertToSlug(registro.titulo.trim())}}
-
-
-                <br>
-
+                tags: <a @click="filter(tag)" v-for="tag in registro.etiquetas.split(', ')">{{tag}} </a>
+                <div class="is-size-7">Compartir link: {{url.origin+url.pathname+'?doc='+convertToSlug(registro.titulo.trim())}}</div>
+                
               </div>
             </div>
-            <!-- <footer class="card-footer">
-                  <a href="#" class="card-footer-item"><span style="font-size: 1em; margin-right: .4em;">0 </span> <i class="fa fa-thumbs-up is-size-4" aria-hidden="true"></i></a>
-                  <a href="#" class="card-footer-item"><span style="font-size: 1em; margin-right: .4em;">0 </span> <i class="fa fa-commenting is-size-4" aria-hidden="true"></i></a>
-                </footer> -->
+            <footer class="card-footer">
+              <span  class="card-footer-item"><span style="font-size: 1em; margin-right: .4em;">0 </span> <i class="fa fa-star is-size-4" aria-hidden="true" style="color: blue;"></i></span>
+              <span  class="card-footer-item"><span style="font-size: 1em; margin-right: .4em;">{{registro.comentarios.length}} </span> <i style="color: blue;" class="fa fa-commenting is-size-4" aria-hidden="true"></i></span>
+            </footer>
           </div>
         </div>
 
@@ -235,14 +231,12 @@
             <h2 class="subtitle" style="margin-top: .1em;">
               {{titulo_ventana}}
             </h2>
-            <a @click="logout()">Desconectar @{{usuario}}</a>
+            <a @click="logout()" title="Salir" class="is-size-7">Cerrar sesión @{{usuario}}</a>
           </div>
         </div>
       </section>
 
       <div class="container">
-
-
 
         <div class="block" style="margin-top: 1em;">
 
@@ -339,8 +333,7 @@
             <h2 class="subtitle" style="margin-top: .1em;">
               Mostrar documento
             </h2>
-            Hola {{usuario}}!
-            <a @click="logout()">Cerrar sesión</a>
+            <a @click="logout()" title="Salir" class="is-size-7">Cerrar sesión @{{usuario}}</a>            
           </div>
         </div>
       </section>
@@ -468,21 +461,17 @@
 
   </div>
   <!-- app -->
+  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/locale/es.js"></script>
   <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.4/lodash.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  
   <script>
-    // <!-- <editor-wapo name='sintomas'></editor-wapo> -->
 
     moment.locale('es');
-    // console.log(moment().format().substr(0,19).replace("T", " "));
-
-    //2018-02-04T19:35:28
-
-
-
+    
     let myGlobal = {};
     Vue.component('sintomas', {
       template: `<textarea id="sintomas" cols="30" rows="10" required placeholder='Cuándo lo hago?'></textarea>`,
@@ -600,8 +589,6 @@
           this.estado = 'login';
         }
 
-        //console.log(.searchParams.get("doc"));
-
         let url = new URL(window.location.href);
         this.url = url;
         if (url.search.trim().startsWith("?doc=")) {
@@ -610,13 +597,9 @@
           this.url_required = url;
         } else {
           this.url_required = "";
-        }
+        }     
 
-        console.log("quiero ir a", this.url_required);
-        //console.log("busco" + url);
-        //console.log(url.searchParams("doc"));
-
-        // console.log(window.location.pathname);
+         
 
       },
       computed: {
@@ -911,6 +894,7 @@
           this.estado = '';
           this.buscador = '';
           this.comentario = '';
+          this.url_required = '';          
           setTimeout(() => {
             this.estado = 'showAll';
             this.topScroll();
@@ -945,13 +929,9 @@
             this.registro_actual.autor = this.registros[i].autor;
 
             this.registro_actual.comentarios = [];
-
             for (let ii = 0; ii < this.registros[i].comentarios.length; ii++) {
-              //console.log(this.registro_actual.comentarios);
-              //console.log(this.registros[i].comentarios[ii]);
               this.registro_actual.comentarios.push(this.registros[i].comentarios[ii]);
             }
-
 
             this.estado = 'showDocument';
 
@@ -961,6 +941,7 @@
         getDocumentBySlug(slug) {
 
           let i = 0;
+
           let encontrado = false;
 
           for (i = 0; i < this.registros.length; i++) {
