@@ -170,7 +170,14 @@
               <p class="card-header-title">
                 <a title="Abrir documento" @click="getDocument(registro.id)">[#{{registro.id}}] {{registro.titulo}}</a>
               </p>
-              <a href="#" v-show="registro.autor.trim()=='@'+usuario.trim()" class="card-header-icon" aria-label="more options">
+              
+              <span title="Está validado" @click="getDocument(registro.id)" v-show="registro.validadoPor!=='Sin validar'" class="card-header-icon" aria-label="more options">
+                <span class="icon">
+                  <i style="color: blue;" class="fa fa-certificate is-size-4" aria-hidden="true"></i>
+                </span>
+              </span>
+
+              <a v-show="registro.autor.trim()=='@'+usuario.trim()" class="card-header-icon" aria-label="more options">
                 <span class="icon" title="Editar documento" @click="editDocument(registro.id)">
                   <i class="fa fa-pencil is-size-4" aria-hidden="true"></i>
                 </span>
@@ -196,21 +203,21 @@
                   <em>Última actualización {{moment(registro.updatedAt,"YYYY-MMDD h:mm").fromNow()}}</em>
                 </span>
                 <hr>
-                tags: <a @click="filter(tag)" v-for="tag in registro.etiquetas.split(', ')">{{tag}} </a>
+                tags: <a title="Filtrar por etiqueta" @click="filter(tag)" v-for="tag in registro.etiquetas.split(', ')">{{tag}} </a>
                 
                 
               </div>
             </div>
             <footer class="card-footer">
-              <span  class="card-footer-item"><span style="font-size: 1em; margin-right: .4em;">{{registro.likes.length}} </span> <i class="fa fa-star is-size-4" aria-hidden="true" style="color: blue;"></i></span>
-              <span  class="card-footer-item"><span style="font-size: 1em; margin-right: .4em;">{{registro.comentarios.length}} </span> <i style="color: blue;" class="fa fa-commenting is-size-4" aria-hidden="true"></i></span>
+              <span  title="Votos positivos" class="card-footer-item"><span style="font-size: 1em; margin-right: .4em;">{{registro.likes.length}} </span> <i class="fa fa-thumbs-up is-size-4" aria-hidden="true" style="color: blue;"></i></span>
+              <span  title="Comentarios" class="card-footer-item"><span style="font-size: 1em; margin-right: .4em;">{{registro.comentarios.length}} </span> <i style="color: blue;" class="fa fa-commenting is-size-4" aria-hidden="true"></i></span>
             </footer>
           </div>
         </div>
         
         <div v-show="vista.length==0" class="block is-size-4">No se ha encontrado ningún documento</div>
 
-        <a id="getDocumentos_add" class="floatButton" @click="createDocument()">
+        <a title="Crear documento" class="floatButton" @click="createDocument()">
           <i class="fa fa-plus" style="margin-top: 1em; font-size: 1.3em;"></i>
         </a>
 
@@ -226,7 +233,7 @@
       <section class="hero is-info">
         <div class="hero-body">
           <div class="container">
-            <a @click="questionExitFromInsert()" title="Salir">
+            <a @click="questionExitFromInsert()" title="Volver">
               <h1 class="title">
                 <i class="fa fa-hand-spock-o" aria-hidden="true"></i>
                 <i>Seny</i>
@@ -265,6 +272,30 @@
             </div>
           </div>
         </div>
+
+        <div class="block">
+          <div class="field">
+            <label class="label">Documento validado?</label>
+            <div class="control is-expanded">
+              <div class="field">
+                <p class="control has-icons-left">
+                  <span class="select is-fullwidth">
+                    <select v-model="registro_actual.validadoPor">
+                      <option selected>Sin validar</option>
+                      <option v-for="validador in validadores">{{validador}}</option>
+                      
+                    </select>
+                  </span>
+                  <span class="icon  is-left">
+                    <i class="fa fa-certificate"></i>
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
         <div class="block">
           <label class="label">Clasifica el documento *</label>
           <div class="box">
@@ -295,12 +326,16 @@
 
         </div>
 
+        
+
+        
+
         <div class="block">
           <div class="level is-mobile">
             <div class="level-left">
               <p class="control">
-                <a id="cancelar-mensaje-btn" class="button is-blue" @click="questionExitFromInsert()">
-                  Salir
+                <a id="cancelar-mensaje-btn" class="button is-warning" @click="questionExitFromInsert()">
+                  Volver atrás
                 </a>
               </p>
             </div>
@@ -366,6 +401,11 @@
           {{registro_actual.autor}}
           <br>
           <strong>
+            <span class="is-size-4">Validado por: </span>
+          </strong>
+          {{registro_actual.validadoPor}}
+          <br>
+          <strong>
             <span class="is-size-4">Etiqueta/s: </span>
           </strong>
           {{registro_actual.etiquetas}}
@@ -394,7 +434,7 @@
           
           <div class="is-size-7"><strong>Compartir link:</strong> {{url.origin+url.pathname+'?doc='+convertToSlug(registro_actual.titulo.trim())}}</div>
           <hr>
-          <span class="is-pulled-right" style="font-size: 1em; margin-right: .4em;">¿Te resulta útil? <a @click="insertLike()"><i class="fa fa-thumbs-up is-size-4" aria-hidden="true" style="color: blue;"></i></a></span>
+          <span class="is-pulled-right" style="font-size: 1em; margin-right: .4em;">¿Te resulta útil? <a @click="insertLike(registro_actual.autor, usuario)"><i class="fa fa-thumbs-up is-size-4" aria-hidden="true" style="color: blue;"></i></a></span>
           <div class="field">
             <label class="label">¿Tienes algo que decir?</label>
 
@@ -513,12 +553,14 @@
         password: '',
         comentario: '',
         url_required: '',
+        validadores: ["#validador1", "#validador2", "#validador3"],
         url: {},
         registro_actual: {
           id: -1,
           titulo: '',
           incidencias: '',
           etiquetas: '',
+          validadoPor: '',
           sintomas: '',
           procedimiento: '',
           comentarios: [],
@@ -527,256 +569,266 @@
         tags: ["mga", "silo", "recepcion", "otro", "ay"],
         registros: [
         {
-          "id": 1000,
-          "incidencias": "7f9b0a86-2abb-4de3-be8e-d14430e1f85d",
-          "sintomas": "Debitis neque natus. Repellendus odio modi voluptates ex aut numquam. Qui placeat modi doloremque est hic vitae est et. Id voluptatem repellendus et animi sunt veniam officia reiciendis ut. Ab provident in totam sequi sed. Perspiciatis repudiandae nisi delectus maiores facilis vel.<li>Omnis accusantium amet voluptatem qui nesciunt.</li><li>Fugit dolores sed et corrupti.</li>",
-          "procedimiento": "<p>Vel culpa maiores. Delectus voluptatem qui dolor provident autem repudiandae modi facilis. Aut atque dolorem molestias qui. Fuga voluptatum labore ut neque et maiores sit natus. Rerum nemo corporis error aspernatur.</p><p><pre>Et nesciunt voluptatum maiores quo a facilis quae cum.\nDolores recusandae esse.</pre></p>",
-          "titulo": "Eum aliquam dolores dolor.",
-          "etiquetas": "#et, #aut",
-          "autor": "@Jillian_Cormier",
-          "likes": ["@Gonzalo_Wunsch47","@Dell5","@Irving.Donnelly56"],
-          "comentarios": [
-            {
-              "id": 1,
-              "autor": "@Fidel_Cassin81",
-              "mensaje": "Velit enim iusto distinctio soluta modi sed ducimus adipisci. Explicabo debitis enim sit accusantium. Totam suscipit cumque. Ut non et qui.",
-              "createdAt": "2017-10-18 00:23"
-            },
-            {
-              "id": 2,
-              "autor": "@Ramon9",
-              "mensaje": "Ut enim exercitationem est corporis eaque voluptatum voluptas. Nulla qui qui nostrum asperiores adipisci ea aut. Quam odio quo.",
-              "createdAt": "2017-09-27 00:01"
-            }
-          ],
-          "createdAt": "2018-01-05 19:17",
-          "updatedAt": "2017-11-19 00:50"
-          },{
-          "id": 1001,
-          "incidencias": "27a5c713-f3e4-4dc3-9497-9d631ebf5908",
-          "sintomas": "Et doloribus consequatur. Natus esse fuga aut velit architecto rerum. Saepe inventore voluptatem officiis. Inventore similique quas commodi voluptatem. Adipisci adipisci iusto eos ut alias cupiditate est voluptas assumenda. Laboriosam qui qui.<li>Eum et nihil consectetur mollitia quis qui.</li><li>Impedit ex odit aliquam eligendi.</li>",
-          "procedimiento": "<p>Et aspernatur et facilis praesentium ea quasi eveniet voluptatem quis. Ut labore ea omnis similique corrupti dolorem quod accusantium. Commodi quisquam vel sit asperiores temporibus eum. In sint quisquam pariatur et vitae est rem molestias.</p><p><pre>Eligendi inventore qui sit autem.\nDolorum enim voluptatum omnis veniam beatae provident.</pre></p>",
-          "titulo": "Numquam officia aspernatur ipsum nemo enim.",
-          "etiquetas": "#occaecati, #suscipit",
-          "autor": "@Wendell_Glover92",
-          "likes": ["@Serenity_Lebsack96","@Giovanny_Robel43","@Norbert_Bernhard"],
-          "comentarios": [
-            {
-              "id": 1,
-              "autor": "@Hillary.Stokes93",
-              "mensaje": "Et pariatur illo iure qui non sed. Vitae quos maxime nam. Deserunt et sint voluptatibus.",
-              "createdAt": "2017-07-09 16:36"
-            },
-            {
-              "id": 2,
-              "autor": "@Vanessa_Frami",
-              "mensaje": "Cumque molestiae ab architecto molestias a dolor voluptatem odio autem. Officiis deserunt optio qui et corrupti voluptas dolorum omnis repudiandae. Culpa et perspiciatis et.",
-              "createdAt": "2017-08-11 00:02"
-            }
-          ],
-          "createdAt": "2017-09-30 16:35",
-          "updatedAt": "2017-08-20 12:26"
-          },{
-          "id": 1002,
-          "incidencias": "dba9cbbc-5c3e-402b-9923-1e736439f59c",
-          "sintomas": "Vel quia aut fuga eius. Modi maiores rerum non molestias vero explicabo debitis odio illum. Beatae ipsum aut id asperiores dignissimos quod ut.<li>Eaque reprehenderit magni.</li><li>Tenetur amet sunt blanditiis nobis esse quis.</li>",
-          "procedimiento": "<p>In et non sed. Dolores voluptatum neque dicta. Quisquam dignissimos minus quis et sint laboriosam asperiores.</p><p><pre>Velit omnis nihil molestiae qui saepe.\nVoluptatem optio modi omnis et reprehenderit delectus vero eum.</pre></p>",
-          "titulo": "Voluptatem recusandae eos culpa dolor sit dolore suscipit.",
-          "etiquetas": "#mollitia, #sint",
-          "autor": "@Ophelia_McClure",
-          "likes": ["@Catalina.Cruickshank","@Jeramy6","@Larue.Krajcik13"],
-          "comentarios": [
-            {
-              "id": 1,
-              "autor": "@Chaya40",
-              "mensaje": "Illo ut possimus quos. Consequatur neque dignissimos et est et et. Aut voluptatibus et.",
-              "createdAt": "2017-12-29 11:50"
-            },
-            {
-              "id": 2,
-              "autor": "@Felicita_Kris",
-              "mensaje": "Sit molestiae laboriosam tempore a totam. Eius odio sapiente voluptatem praesentium nihil eligendi. Officiis et mollitia et harum. Quaerat ex quia voluptas exercitationem qui molestiae.",
-              "createdAt": "2017-10-13 13:15"
-            }
-          ],
-          "createdAt": "2017-11-06 14:06",
-          "updatedAt": "2017-02-28 15:56"
-          },{
-          "id": 1003,
-          "incidencias": "da8d3ed9-1344-43ff-babe-934c3a83fd9c",
-          "sintomas": "Autem neque quis aut omnis alias. Omnis aliquid odit quia in doloremque amet architecto dolorum molestias. Delectus eveniet explicabo consequatur et vel voluptas. Vel aspernatur voluptas aut velit iure est at sint.<li>Alias in voluptas debitis deserunt quas.</li><li>Nesciunt ut aut molestiae repudiandae quidem.</li>",
-          "procedimiento": "<p>Est vitae reiciendis ullam enim dignissimos omnis. Qui a esse consequatur aliquam dolor possimus quo laborum sed. Et veniam porro qui facere et quia consequuntur doloremque. Est explicabo laudantium minima mollitia ab et eum inventore.</p><p><pre>Expedita et omnis.\nVeritatis alias doloremque aut dolorem nihil quam consequatur saepe.</pre></p>",
-          "titulo": "Similique asperiores provident enim mollitia possimus enim earum eveniet eaque.",
-          "etiquetas": "#voluptatem, #enim",
-          "autor": "@Leif51",
-          "likes": ["@Chauncey_Kertzmann","@Chasity_Gutkowski","@Carissa_McGlynn75"],
-          "comentarios": [
-            {
-              "id": 1,
-              "autor": "@Freida_Kuhlman66",
-              "mensaje": "Beatae facere cumque. Excepturi vitae vel vitae voluptate. Voluptas eos suscipit voluptate voluptatem tempore. Ut nam nihil voluptas perspiciatis repudiandae enim. Voluptas harum inventore omnis rerum fuga dolor eos qui dignissimos. Architecto nisi ut vel quos commodi et.",
-              "createdAt": "2017-09-15 22:03"
-            },
-            {
-              "id": 2,
-              "autor": "@Rebekah65",
-              "mensaje": "Beatae ipsam fuga dolor voluptas sint vel et et est. Rerum cupiditate aliquam quaerat vero. Libero praesentium officia iste odit.",
-              "createdAt": "2017-06-06 02:06"
-            }
-          ],
-          "createdAt": "2017-04-04 12:49",
-          "updatedAt": "2017-12-29 02:39"
-          },{
-          "id": 1004,
-          "incidencias": "636029d7-0b61-4647-9438-a2bd939d7d23",
-          "sintomas": "Sunt eaque dignissimos consequuntur est quidem aut consequuntur quo corporis. Qui ut voluptas. Libero nobis cumque aut minus dicta nisi id totam sint. Dignissimos exercitationem doloremque et illum beatae. Id sed deleniti ut error eveniet dicta.<li>Voluptate ut unde assumenda laborum labore quas delectus mollitia.</li><li>Nobis modi qui veritatis ullam unde.</li>",
-          "procedimiento": "<p>Enim repellendus deserunt repellat rem nisi rerum doloribus. Ut ea quo dolores. Quas sed et numquam. Aut voluptas ea aut hic illo aliquam. Pariatur magni tempora. Voluptatem fugit ipsa ad necessitatibus voluptatum.</p><p><pre>Assumenda nam molestias.\nVel occaecati optio et tempora rerum et.</pre></p>",
-          "titulo": "Eos itaque et delectus.",
-          "etiquetas": "#non, #ipsam",
-          "autor": "@Maddison41",
-          "likes": ["@Sam.Considine60","@Olga_Jenkins2","@Darrell_Stroman52"],
-          "comentarios": [
-            {
-              "id": 1,
-              "autor": "@Dewitt28",
-              "mensaje": "Eum omnis minima delectus et modi maiores eaque non non. Sint ad et et laboriosam commodi facere autem. Temporibus in debitis aperiam qui dignissimos ut sit. Beatae perferendis ducimus eum. Vitae inventore vel repellat incidunt ratione quam id et numquam.",
-              "createdAt": "2017-09-17 18:39"
-            },
-            {
-              "id": 2,
-              "autor": "@Jeramie.Stoltenberg",
-              "mensaje": "Laudantium ea eum vero ab sed nesciunt. Labore quo id enim corporis nemo maxime quis consequatur iste. Incidunt excepturi quam est omnis adipisci eum dignissimos omnis. Omnis doloremque tempora. Cumque tempora officiis at facere neque.",
-              "createdAt": "2017-08-29 17:40"
-            }
-          ],
-          "createdAt": "2017-10-28 04:49",
-          "updatedAt": "2017-12-23 12:39"
-          },{
-          "id": 1005,
-          "incidencias": "a5e1cc3d-7a8c-47c2-83b4-67097234ce30",
-          "sintomas": "Non aperiam consequuntur aut maiores rem dolorem voluptas illo. Porro rem fugit veritatis quo. At dicta hic. Tempora dolor amet. Deserunt et veritatis veniam asperiores nihil. Officiis non ut omnis.<li>Voluptatem odit itaque fugit eius.</li><li>Omnis et numquam consequuntur rem.</li>",
-          "procedimiento": "<p>Ad laboriosam necessitatibus quasi placeat possimus qui animi quaerat rerum. Maxime quia rerum similique praesentium. Provident officiis id delectus impedit veritatis suscipit.</p><p><pre>Alias et voluptatibus.\nOfficiis nisi fugiat.</pre></p>",
-          "titulo": "Deserunt quos neque dolorem fuga dolorem.",
-          "etiquetas": "#possimus, #ut",
-          "autor": "@Sharon.Turner21",
-          "likes": ["@Keagan.Cartwright13","@Pablo51","@Ressie12"],
-          "comentarios": [
-            {
-              "id": 1,
-              "autor": "@Gwen_Williamson",
-              "mensaje": "Impedit iure delectus modi est. Enim ut et inventore. Sit et sint deserunt et possimus aut ut saepe. Vero libero commodi. Eos omnis ipsum adipisci provident consequuntur et sunt voluptatem. Et totam laudantium.",
-              "createdAt": "2017-12-27 14:20"
-            },
-            {
-              "id": 2,
-              "autor": "@Misty20",
-              "mensaje": "Amet tempora qui voluptate. Sunt eaque recusandae. Molestias porro nobis hic et tenetur. Impedit ipsa delectus eveniet rerum excepturi animi. Sint quia voluptas distinctio quis.",
-              "createdAt": "2017-10-05 16:12"
-            }
-          ],
-          "createdAt": "2017-03-04 13:54",
-          "updatedAt": "2017-08-18 02:29"
-          },{
-          "id": 1006,
-          "incidencias": "3df12fe7-a9cc-45fd-abc7-b3514d0b711e",
-          "sintomas": "Omnis qui distinctio aut quibusdam dolorem. In est ducimus. Sed ut enim est omnis non sit quibusdam et. Autem aliquid magni quod nesciunt aut amet. Repellendus totam eveniet rerum mollitia non non rem possimus.<li>Dolores aperiam sit pariatur voluptatem voluptatem quasi.</li><li>Quia et aut quasi.</li>",
-          "procedimiento": "<p>Nihil earum dolor porro mollitia similique vel. Ut et commodi ut. Cum consequuntur iusto nemo nobis.</p><p><pre>Molestias nulla eaque doloribus nesciunt nemo.\nPerferendis non perspiciatis eius qui.</pre></p>",
-          "titulo": "Nam optio cupiditate non dolores unde ipsum ut eligendi.",
-          "etiquetas": "#iusto, #qui",
-          "autor": "@Jannie.Homenick",
-          "likes": ["@Lexie.Wintheiser66","@Brittany_Turcotte","@Rogelio53"],
-          "comentarios": [
-            {
-              "id": 1,
-              "autor": "@Jodie3",
-              "mensaje": "Voluptatum quia velit voluptatem qui culpa voluptatem quae nobis in. Ipsam eum consequuntur suscipit porro. Minima ducimus ut et cum minus minima.",
-              "createdAt": "2017-04-20 03:04"
-            },
-            {
-              "id": 2,
-              "autor": "@Reese.Smitham",
-              "mensaje": "Et libero natus cum officiis distinctio delectus. Molestiae illo et et. Aut qui non distinctio nesciunt consequuntur veniam dolorem et. Architecto quo sit. Eaque ea ex aspernatur.",
-              "createdAt": "2018-01-01 06:03"
-            }
-          ],
-          "createdAt": "2017-07-29 05:54",
-          "updatedAt": "2017-06-07 01:01"
-          },{
-          "id": 1007,
-          "incidencias": "67df6d5e-7062-4237-b8af-181fff806c83",
-          "sintomas": "Culpa autem quas voluptatem animi non enim ut. Aut dolor et voluptatem quae doloribus perferendis quam molestiae et. Quia omnis officia voluptas sit.<li>Fuga in nihil culpa.</li><li>Voluptatem possimus dolores voluptas minus.</li>",
-          "procedimiento": "<p>Odit molestiae quia voluptas sit itaque dolores iusto et officia. Id porro est. Saepe et quia sed atque consequatur ex et.</p><p><pre>Ipsa ullam dolores est quis sint eaque error provident.\nVoluptas sint quisquam odio voluptates voluptas officiis magnam expedita.</pre></p>",
-          "titulo": "Possimus molestiae suscipit delectus distinctio.",
-          "etiquetas": "#nostrum, #et",
-          "autor": "@Monique23",
-          "likes": ["@Julie_Welch13","@Hollie43","@Raymundo25"],
-          "comentarios": [
-            {
-              "id": 1,
-              "autor": "@Kaela.Barrows69",
-              "mensaje": "Eius aut expedita sunt. Rerum rerum corrupti sed. Libero culpa enim. Fuga est deserunt qui voluptas harum ab.",
-              "createdAt": "2017-08-09 03:38"
-            },
-            {
-              "id": 2,
-              "autor": "@Maeve_Jacobi",
-              "mensaje": "Possimus amet ab architecto dignissimos sit rerum quo. Repellendus consequatur explicabo et. Ea porro est et quia aperiam id tempora officia.",
-              "createdAt": "2017-10-24 22:08"
-            }
-          ],
-          "createdAt": "2017-06-24 05:09",
-          "updatedAt": "2017-09-13 06:37"
-          },{
-          "id": 1008,
-          "incidencias": "cea30b30-acb8-4547-bf56-cc6ab453cbe3",
-          "sintomas": "Sed officia harum occaecati et commodi. Nobis rem reiciendis soluta non dignissimos illum. Et reiciendis amet qui atque quaerat ut qui ab.<li>Quo eum reprehenderit libero officia ut natus.</li><li>Ullam blanditiis provident.</li>",
-          "procedimiento": "<p>Qui est enim minus cum officia expedita delectus ipsum. Vero est qui ducimus inventore ex labore soluta suscipit ipsam. Iusto et possimus. Excepturi est dolores id saepe aliquid vel velit velit. Consequuntur rerum quaerat quia corrupti facere optio.</p><p><pre>Ut distinctio excepturi et.\nQuasi praesentium ut aliquam eius sunt iste corrupti facere.</pre></p>",
-          "titulo": "Ut dolorum quis.",
-          "etiquetas": "#aut, #ut",
-          "autor": "@Naomi_Hudson",
-          "likes": ["@Jaylan_Block2","@Hank.Powlowski","@Caterina.Torp69"],
-          "comentarios": [
-            {
-              "id": 1,
-              "autor": "@Ofelia30",
-              "mensaje": "Aut ea modi amet dolores et quidem. Sapiente aut deleniti ipsa et. Quia eligendi accusamus fuga cupiditate voluptatem occaecati. Fuga amet et sit dolorem eos iusto sapiente aut. Odio eligendi totam id quam laborum unde accusantium error. Voluptatem est eveniet.",
-              "createdAt": "2017-08-26 18:08"
-            },
-            {
-              "id": 2,
-              "autor": "@Kenyon.OReilly",
-              "mensaje": "Deleniti consequatur doloremque quis aperiam ducimus. Asperiores nesciunt ipsam dolorem. Numquam libero et omnis aut eveniet dolor non. Delectus id et quaerat inventore quaerat tempora exercitationem aut. Voluptas consequatur quisquam sit sunt et omnis.",
-              "createdAt": "2017-06-03 19:06"
-            }
-          ],
-          "createdAt": "2017-10-27 17:39",
-          "updatedAt": "2018-01-05 13:55"
-          },{
-          "id": 1009,
-          "incidencias": "fd0c2e26-a603-4511-b22b-0e159338f3dc",
-          "sintomas": "Dolorum sed labore fugit non eius iure quod. Iure perferendis facilis vitae. Id voluptatem libero recusandae neque in id occaecati enim. Recusandae voluptas sed non doloremque. Aut voluptate sed sunt optio quas ratione quam quibusdam quo.<li>Doloribus ipsa beatae.</li><li>Similique similique illo pariatur quidem harum voluptas nam nesciunt nam.</li>",
-          "procedimiento": "<p>Dolores soluta suscipit maxime voluptatum qui cumque cum sed. Provident qui non adipisci quis ea distinctio similique.</p><p><pre>Porro quas sapiente eos asperiores vero voluptate asperiores quos magnam.\nOccaecati at deserunt ut et qui.</pre></p>",
-          "titulo": "Sit est vero molestiae assumenda aut.",
-          "etiquetas": "#omnis, #et",
-          "autor": "@Imogene_Kassulke",
-          "likes": ["@Garnet66","@Kaleigh.Christiansen60","@Ivah_Tromp"],
-          "comentarios": [
-            {
-              "id": 1,
-              "autor": "@Wilburn10",
-              "mensaje": "Odit sed et qui nihil fugit nostrum sint sit odio. Vel laborum ex. Voluptate quia officiis similique et minus et. Est dolor asperiores. Atque ratione itaque ipsum sit non omnis.",
-              "createdAt": "2018-01-02 01:46"
-            },
-            {
-              "id": 2,
-              "autor": "@Woodrow_Legros",
-              "mensaje": "Illo fugiat ea possimus debitis. Et dolores recusandae. Enim quaerat minima aperiam possimus.",
-              "createdAt": "2017-09-24 07:31"
-            }
-          ],
-          "createdAt": "2017-06-09 08:59",
-          "updatedAt": "2017-02-21 03:42"
-          }
+    "id": 1000,
+    "incidencias": "4b17070a-86bb-474f-9e39-8b4113adcd3c",
+    "validadoPor": "#validador1",
+    "sintomas": "Dolores libero ea voluptatem voluptas ut. Unde ipsum maiores deleniti error dolorem ducimus repudiandae et vel. Eos delectus voluptas beatae. Eos debitis quasi dolorum doloremque et magnam est soluta. Dolores nihil ut.<li>Libero necessitatibus suscipit et aut est.</li><li>Earum doloribus ut suscipit laborum et magnam aut.</li>",
+    "procedimiento": "<p>Nihil omnis atque eum quas quasi sint. Iure ut reiciendis aperiam aperiam ipsa aut. Eaque consectetur temporibus voluptate et qui amet totam et aut. Molestiae sed nostrum et. Sunt minima cupiditate nostrum rerum earum et quibusdam. Quo aperiam sapiente molestiae.</p><p><pre>Deleniti sint quia qui architecto dolores quam sit.\nDicta facere voluptates fugiat quam.</pre></p>",
+    "titulo": "Libero unde dolorum.",
+    "etiquetas": "#porro, #quis",
+    "autor": "@Olga40",
+    "likes": ["@Thea94","@Ryleigh.Adams","@Darrel90"],
+    "comentarios": [
+      {
+        "id": 1,
+        "autor": "@Leonel_Barrows",
+        "mensaje": "Quia eveniet perferendis. Est cum ea sed ducimus eos impedit est non. Pariatur placeat laboriosam omnis magni.",
+        "createdAt": "2017-07-08 20:02"
+      },
+      {
+        "id": 2,
+        "autor": "@Rylan_Zemlak",
+        "mensaje": "At omnis adipisci voluptatem et laudantium. Corrupti voluptatem ullam sunt unde placeat. Consectetur atque minima ut earum. Ut voluptatem quod aliquid aut.",
+        "createdAt": "2017-11-06 08:37"
+      }
+    ],
+    "createdAt": "2017-03-01 10:58",
+    "updatedAt": "2018-01-19 06:54"
+    },{
+    "id": 1001,
+    "incidencias": "ceedbc99-2fad-48c8-975d-bbe966b27ec7",
+    "validadoPor": "Sin validar",
+    "sintomas": "Odio laudantium cupiditate ex. Corrupti molestiae et sed. Vitae consectetur qui beatae quisquam sint nam et a. Omnis sint dolorem. Beatae id earum aspernatur dolorem totam qui. Dicta alias neque rerum placeat quasi cupiditate illum voluptatibus in.<li>Qui et explicabo.</li><li>Soluta expedita dignissimos.</li>",
+    "procedimiento": "<p>Sunt ut cupiditate et perspiciatis. Ut at suscipit. Quia voluptate nostrum nobis et aut ut blanditiis dicta adipisci. Maiores minus harum.</p><p><pre>Ipsa inventore natus velit laboriosam fugit.\nQuos omnis eum.</pre></p>",
+    "titulo": "Odio iure magnam dolor laboriosam quae molestias voluptatum optio.",
+    "etiquetas": "#assumenda, #hic",
+    "autor": "@Elza8",
+    "likes": ["@Karen_Mosciski","@Piper_Russel","@Ebba.Grimes"],
+    "comentarios": [
+      {
+        "id": 1,
+        "autor": "@Carmel53",
+        "mensaje": "Rerum natus saepe ut ab enim nam veniam a nisi. Debitis placeat rerum laborum. Sit et qui iure at reiciendis.",
+        "createdAt": "2017-10-15 14:23"
+      },
+      {
+        "id": 2,
+        "autor": "@Noemie_Becker21",
+        "mensaje": "Dolorem corporis earum quia. Nihil totam in expedita magni. Mollitia deleniti commodi expedita itaque non eaque distinctio. Aut qui quibusdam. Non laborum sint itaque itaque fugit ut a tempore doloremque.",
+        "createdAt": "2017-03-28 04:23"
+      }
+    ],
+    "createdAt": "2017-06-04 00:37",
+    "updatedAt": "2017-03-26 21:37"
+    },{
+    "id": 1002,
+    "incidencias": "a0662199-4d9f-49e6-a11a-d94d49ecb101",
+    "validadoPor": "Sin validar",
+    "sintomas": "Et sunt temporibus et quam tenetur. Aliquid ut ratione quo. Possimus non et sit laborum consequatur at et exercitationem. Accusamus earum libero quod asperiores eum reprehenderit. Esse quasi quo at qui asperiores. Accusamus dicta eveniet.<li>Necessitatibus nesciunt non sint quas fugit consequatur nostrum sunt.</li><li>Quo eum qui quibusdam earum magnam alias numquam quas.</li>",
+    "procedimiento": "<p>Sequi accusamus quo velit perferendis minus. Minus ut cum iusto. Nostrum ut repellat maxime quia vero.</p><p><pre>Ut nisi soluta.\nRepellat blanditiis et rerum quis rerum molestiae.</pre></p>",
+    "titulo": "Velit alias vel.",
+    "etiquetas": "#error, #voluptatibus",
+    "autor": "@Hilbert_McKenzie",
+    "likes": ["@Bella1","@Myah.Graham","@Assunta.Thompson99"],
+    "comentarios": [
+      {
+        "id": 1,
+        "autor": "@Issac89",
+        "mensaje": "Provident et voluptatem omnis. Et ut et voluptatem provident ut in odit. Repudiandae non id nisi esse ab et. Recusandae quibusdam enim.",
+        "createdAt": "2017-08-22 20:48"
+      },
+      {
+        "id": 2,
+        "autor": "@Jeramy_Effertz",
+        "mensaje": "Suscipit architecto rem enim quod suscipit sunt tenetur vel iusto. Et nihil quas eum. Sit aut commodi aut dolores nobis.",
+        "createdAt": "2017-12-04 19:30"
+      }
+    ],
+    "createdAt": "2017-02-21 12:53",
+    "updatedAt": "2017-03-20 07:56"
+    },{
+    "id": 1003,
+    "incidencias": "004a87e6-1b8b-459d-9322-6a297d3bb06d",
+    "validadoPor": "Sin validar",
+    "sintomas": "Impedit qui quae eligendi facere magni et temporibus id ut. Voluptatem maxime consequatur consequatur et placeat perspiciatis ut. Non labore totam autem molestiae in minima tenetur numquam. Inventore culpa laborum rem vitae dicta. Totam similique cumque quia aliquam et in.<li>A odio aut autem et non ratione voluptatum doloremque.</li><li>Sit nostrum soluta similique quam mollitia nobis facilis non.</li>",
+    "procedimiento": "<p>Beatae illo occaecati autem voluptas ut inventore tenetur at quia. Et iste necessitatibus dolorem vitae et vel fugiat. Voluptatem minima quibusdam maxime quia et doloremque facilis ipsum. In nobis minima et sit optio quis voluptate corrupti.</p><p><pre>Dolorem animi provident corrupti temporibus sunt explicabo praesentium possimus sapiente.\nDignissimos tempora quibusdam pariatur omnis non non et nesciunt.</pre></p>",
+    "titulo": "Id qui eum.",
+    "etiquetas": "#voluptas, #et",
+    "autor": "@Claudia_Williamson",
+    "likes": ["@Elena54","@Valentin.Wiza","@Mitchell75"],
+    "comentarios": [
+      {
+        "id": 1,
+        "autor": "@Noel_Dickinson",
+        "mensaje": "Harum sed eos nihil omnis ea animi voluptatibus esse. Odit exercitationem nihil veritatis error quisquam impedit ut. Doloremque ipsam in a voluptatem. Labore eum aut facilis sit quod enim.",
+        "createdAt": "2018-01-29 07:07"
+      },
+      {
+        "id": 2,
+        "autor": "@Corene81",
+        "mensaje": "Molestiae vel officiis voluptas dolorum eaque repellendus minima labore. Et unde labore iure quia et quo. Rem commodi in qui debitis et est commodi. Optio rerum et totam aut molestiae fugiat non vero quis. Minus aut et aut sunt. Nemo ex sed et enim maxime.",
+        "createdAt": "2017-05-19 10:52"
+      }
+    ],
+    "createdAt": "2017-05-25 10:59",
+    "updatedAt": "2017-06-25 10:45"
+    },{
+    "id": 1004,
+    "incidencias": "66a31c98-c039-406a-9ec3-691d54577ead",
+    "validadoPor": "Sin validar",
+    "sintomas": "Qui id enim. Debitis voluptates quia voluptate. Magni corrupti neque. Quibusdam amet soluta qui. Sit provident id quibusdam dolores sit repellat et inventore. Quo ab eveniet dolor eligendi fugiat quasi ut excepturi aut.<li>Voluptas et maxime facere rem nihil dolorem.</li><li>Nisi vitae perspiciatis quia qui repellendus ipsa id.</li>",
+    "procedimiento": "<p>Reiciendis delectus velit consequatur impedit. Eveniet expedita possimus. Aut recusandae voluptatem. Omnis commodi vel.</p><p><pre>Nam atque molestiae.\nAut tempora aut nulla velit dicta maxime optio nemo.</pre></p>",
+    "titulo": "Occaecati nam alias.",
+    "etiquetas": "#accusantium, #occaecati",
+    "autor": "@Devon.King45",
+    "likes": ["@Mercedes_Thiel54","@Lloyd10","@Casandra55"],
+    "comentarios": [
+      {
+        "id": 1,
+        "autor": "@Marietta_Koch",
+        "mensaje": "Cumque ratione optio quisquam. A debitis rem eius vitae deserunt fuga iure. Cum dolor aut qui hic veritatis.",
+        "createdAt": "2017-04-24 23:38"
+      },
+      {
+        "id": 2,
+        "autor": "@Wava73",
+        "mensaje": "Perferendis necessitatibus facere et. Qui quia saepe. Eius ipsum ducimus consequatur at aliquid voluptatum qui quia. Omnis dignissimos amet.",
+        "createdAt": "2017-10-07 01:00"
+      }
+    ],
+    "createdAt": "2017-11-13 19:33",
+    "updatedAt": "2017-02-23 18:49"
+    },{
+    "id": 1005,
+    "incidencias": "b98ccd06-e29e-4979-a45a-b4a75510558a",
+    "validadoPor": "Sin validar",
+    "sintomas": "Dolor quaerat enim. Aut nihil aliquam amet et consequatur aut. Nisi recusandae ut. Non rerum voluptatem ut quia.<li>Sit dolor quis.</li><li>Ab quae possimus iure repudiandae quam quasi.</li>",
+    "procedimiento": "<p>Odit minima eos sint eius. Officiis dicta harum qui provident asperiores quis praesentium sint aspernatur. Sunt tempore sit ut consequatur. Laboriosam explicabo ea voluptate ratione incidunt ratione omnis saepe. Et dolorem praesentium tempora ad reprehenderit beatae. Velit vel fugit non et illum voluptate rem vitae rerum.</p><p><pre>Ratione ea sint quidem quasi minus qui modi quos qui.\nVoluptatibus consequatur et consequatur praesentium perferendis.</pre></p>",
+    "titulo": "Qui sed illum molestias.",
+    "etiquetas": "#officia, #explicabo",
+    "autor": "@Leora57",
+    "likes": ["@Reva_Collier","@Raoul86","@Einar_OConnell"],
+    "comentarios": [
+      {
+        "id": 1,
+        "autor": "@Kira.Koelpin5",
+        "mensaje": "Voluptatem sed voluptatem dolores ad fugiat ipsa alias. Dolore molestias itaque quis enim rem commodi ab eius exercitationem. Nostrum tempore non. Sapiente maiores quisquam quasi rerum. Laudantium perferendis rerum quis delectus quis sint corrupti.",
+        "createdAt": "2018-01-19 11:32"
+      },
+      {
+        "id": 2,
+        "autor": "@Colby50",
+        "mensaje": "Autem illo delectus illo similique omnis laborum. Non dolor praesentium autem sed quasi aperiam suscipit sed. Dolorem non doloremque occaecati quia culpa exercitationem saepe aut. Quis illum adipisci dolore magni nobis dignissimos cupiditate est qui. Nisi at nisi et minima corporis soluta voluptatem maxime numquam.",
+        "createdAt": "2017-10-05 09:49"
+      }
+    ],
+    "createdAt": "2017-02-11 23:53",
+    "updatedAt": "2017-03-09 06:06"
+    },{
+    "id": 1006,
+    "incidencias": "8b92d507-c899-46fe-b1c8-85302db921d0",
+    "validadoPor": "Sin validar",
+    "sintomas": "Neque earum qui est ut veritatis numquam inventore facere. Repudiandae sunt repudiandae repellat placeat delectus necessitatibus optio in. Molestiae nesciunt magnam voluptatibus nostrum qui facilis esse beatae.<li>Quis asperiores laudantium perspiciatis voluptates est minus voluptas eveniet minima.</li><li>Dignissimos perferendis dolore saepe repellendus ut consequatur.</li>",
+    "procedimiento": "<p>Aut alias autem. Aut enim ex. Architecto ipsam veritatis voluptatem voluptatem cupiditate enim natus. Ut nihil qui sapiente aut delectus.</p><p><pre>Quos eveniet delectus aut quia quod eligendi.\nLibero eum cupiditate consequatur eos occaecati est.</pre></p>",
+    "titulo": "Amet sint molestiae et commodi nisi quo.",
+    "etiquetas": "#eos, #suscipit",
+    "autor": "@Jett_McGlynn21",
+    "likes": ["@Jacklyn46","@Lavinia_Jacobson","@Benedict_Rodriguez"],
+    "comentarios": [
+      {
+        "id": 1,
+        "autor": "@Nathan16",
+        "mensaje": "Aspernatur sint dolor. Aut rem dolores error nobis laborum iste sed ut. Non nostrum culpa eius temporibus et itaque quia. Vero quia aliquid id laborum quia provident. Quos alias rerum molestiae unde necessitatibus perferendis dignissimos autem.",
+        "createdAt": "2017-09-01 19:37"
+      },
+      {
+        "id": 2,
+        "autor": "@Yvonne.Weimann",
+        "mensaje": "Animi harum qui hic et consequatur et est. Cum vitae quis suscipit asperiores deserunt. Accusamus aut qui perspiciatis et quos. Aut quia qui vitae accusamus nisi aut modi. Quam perspiciatis consequatur autem sequi voluptas neque delectus. Nesciunt delectus eveniet quasi et.",
+        "createdAt": "2017-10-12 18:29"
+      }
+    ],
+    "createdAt": "2017-11-17 02:39",
+    "updatedAt": "2017-09-18 03:20"
+    },{
+    "id": 1007,
+    "incidencias": "b142873a-51c7-4a36-af68-45f659234ad8",
+    "validadoPor": "Sin validar",
+    "sintomas": "Aspernatur quo animi dolores ut voluptatem beatae pariatur quo. Sed non quam aspernatur cumque. Doloribus deleniti aut. Placeat aut qui sint voluptatem aliquid id ratione. Odit deserunt sunt quia. Quasi et odio ipsam fugit molestias non.<li>Qui sit similique minus omnis voluptatum.</li><li>Aut autem dignissimos maiores quasi quis minus voluptatem.</li>",
+    "procedimiento": "<p>Enim fugit ipsam maiores veritatis cupiditate alias voluptatibus fuga. Illum quae eos est. Eius provident aperiam voluptas illo. Suscipit vitae praesentium ut cupiditate laudantium sed. Magnam repellat fuga pariatur blanditiis placeat distinctio. Consectetur magni rerum quo dolor non distinctio.</p><p><pre>Explicabo enim et animi.\nEx ipsa officiis eaque et rerum.</pre></p>",
+    "titulo": "Modi amet sit nemo aut.",
+    "etiquetas": "#nisi, #aspernatur",
+    "autor": "@Darwin.Pollich",
+    "likes": ["@Allan63","@Elisa.Williamson44","@Art_Rippin90"],
+    "comentarios": [
+      {
+        "id": 1,
+        "autor": "@Kadin94",
+        "mensaje": "Cumque quasi veritatis voluptates totam esse. Consectetur molestiae quibusdam ut enim ducimus nisi cum consequatur voluptas. Et et amet aut.",
+        "createdAt": "2017-04-29 01:18"
+      },
+      {
+        "id": 2,
+        "autor": "@Ernestine71",
+        "mensaje": "Est maiores commodi praesentium beatae. Est consectetur non est dignissimos totam dolorum ipsa inventore magni. Eligendi ut sit labore qui magni fugiat possimus quos. Ea deleniti non et odit rerum. Nihil harum quos fugit soluta fugiat numquam exercitationem harum ut.",
+        "createdAt": "2017-07-17 16:21"
+      }
+    ],
+    "createdAt": "2017-12-29 23:59",
+    "updatedAt": "2017-12-24 18:11"
+    },{
+    "id": 1008,
+    "incidencias": "cd8a723d-0424-4a5d-b34d-7715d056773d",
+    "validadoPor": "Sin validar",
+    "sintomas": "Eos incidunt quia. Dolorum impedit aut dignissimos explicabo qui reprehenderit voluptas. Exercitationem saepe esse. Enim non ea. Molestiae alias quia impedit.<li>Et quis molestiae numquam.</li><li>Beatae nobis ex incidunt quis praesentium magnam quaerat.</li>",
+    "procedimiento": "<p>Eius ut omnis aut vitae magni aut. Sit qui neque nobis reprehenderit ullam. Illo fuga deleniti sequi aut aut. Dolor sed corrupti est eum est soluta placeat cum. Voluptas architecto eos.</p><p><pre>Velit ullam ut molestiae perspiciatis explicabo ex expedita sapiente molestiae.\nAut in voluptatem ut velit minima.</pre></p>",
+    "titulo": "Rerum nemo quaerat dicta.",
+    "etiquetas": "#nam, #unde",
+    "autor": "@Buford_Fahey",
+    "likes": ["@Issac85","@Noelia31","@Geo_Stanton"],
+    "comentarios": [
+      {
+        "id": 1,
+        "autor": "@Kira_Jast",
+        "mensaje": "Amet delectus beatae consequatur quaerat quis vel voluptatibus deserunt veniam. Sunt et quia nostrum quo necessitatibus omnis atque aut. Cumque laboriosam occaecati minus magnam qui tempora.",
+        "createdAt": "2017-09-06 19:50"
+      },
+      {
+        "id": 2,
+        "autor": "@Garnet31",
+        "mensaje": "Eligendi delectus quia dolorum neque assumenda dolor et velit at. Totam quae impedit sed cupiditate. Ab inventore iusto voluptas totam cumque debitis aut sunt. Exercitationem impedit iste sint.",
+        "createdAt": "2017-02-12 18:53"
+      }
+    ],
+    "createdAt": "2017-04-03 18:56",
+    "updatedAt": "2017-06-18 21:06"
+    },{
+    "id": 1009,
+    "incidencias": "0ecf2ab8-a410-4288-98d8-7e5cfd1b8bcf",
+    "validadoPor": "#validador1",
+    "sintomas": "Tempora ad est odio. Consequuntur aut est adipisci voluptate laudantium illo. Nam sit assumenda eligendi numquam suscipit voluptatum.<li>Iste dolores dolores.</li><li>Et ut quidem.</li>",
+    "procedimiento": "<p>Itaque recusandae odio occaecati optio iure non cumque eligendi. Veritatis animi recusandae illo sit nihil ducimus.</p><p><pre>Ut architecto voluptas quis.\nConsequatur doloremque aut itaque possimus ut vitae maxime hic omnis.</pre></p>",
+    "titulo": "Id perspiciatis sit accusantium.",
+    "etiquetas": "#veniam, #vitae",
+    "autor": "@Myrtice_Walsh",
+    "likes": ["@Selina_Bashirian","@Ashley47","@Marisa_Little15"],
+    "comentarios": [
+      {
+        "id": 1,
+        "autor": "@Mollie.Barton39",
+        "mensaje": "Ipsam ut consequuntur libero consequuntur. Consequatur ipsa consequatur molestiae illum ab consequatur a eius aut. Quaerat eos repudiandae cum ullam deserunt recusandae non maxime. Ut ut beatae nisi non eaque. Aspernatur quod et non et saepe et illo temporibus.",
+        "createdAt": "2017-09-21 16:06"
+      },
+      {
+        "id": 2,
+        "autor": "@Lavinia_Corwin77",
+        "mensaje": "Cupiditate quis nihil incidunt et quia. Earum odit aut ea voluptatem sunt quas. Est quia eum ea expedita aut eaque iure aliquam voluptas. Quos est tenetur quos. Excepturi eos quasi magni sed reprehenderit non iusto explicabo in.",
+        "createdAt": "2017-04-10 09:39"
+      }
+    ],
+    "createdAt": "2017-09-19 15:22",
+    "updatedAt": "2017-08-11 01:15"
+    }
         ]
       },
       mounted() {
@@ -838,19 +890,29 @@
         }
       },
       methods: {
-        insertLike(doc){
+        insertLike(autor, usuario) {
 
           let x = this.registro_actual.id;
 
           let i = _.findIndex(this.registros, function (o) { return o.id == x; });
 
-          this.registros[i].likes.push('@'+this.usuario);
-          this.registros[i].likes=_.uniq(this.registros[i].likes).sort().slice();
+          if ('@' + this.usuario.trim() != this.registros[i].autor.trim()) {
 
-          this.notificacion = 'Gracias por el Like ;)';
-          setTimeout(() => {
-            this.notificacion = '';
-          }, 2000);
+            this.registros[i].likes.push('@' + this.usuario);
+            this.registros[i].likes = _.uniq(this.registros[i].likes).sort().slice();
+
+            this.notificacion = 'Gracias por tu voto! ;)';
+            setTimeout(() => {
+              this.notificacion = '';
+            }, 2000);
+
+          } else {
+            this.notificacion = 'No puedes autovotarte';
+            setTimeout(() => {
+              this.notificacion = '';
+            }, 2000);
+
+          }
 
         },        
         convertToSlug(text) {
@@ -1049,13 +1111,19 @@
                 reg.sintomas = myGlobal.sintomas.value();
                 reg.procedimiento = myGlobal.procedimiento.value();
                 reg.autor = "@" + this.usuario;
+                reg.validadoPor = this.registro_actual.validadoPor;
                 reg.comentarios=[];
                 reg.likes=[];
                 reg.createdAt = this.now();
                 reg.updatedAt = this.now();
 
 
-                reg.id = _.maxBy(this.registros, 'id').id + 1;
+                try{
+                  reg.id = _.maxBy(this.registros, 'id').id + 1;
+                } catch(e) {
+                  reg.id = 1;
+                }
+                
                 this.registro_actual.id = reg.id;
                 this.registros.push(reg);
 
@@ -1075,6 +1143,7 @@
               id_registro = _.findIndex(this.registros, function (o) { return o.id == id_registro; });
               this.registros[id_registro].etiquetas = aux;
               this.registros[id_registro].titulo = this.registro_actual.titulo;
+              this.registros[id_registro].validadoPor = this.registro_actual.validadoPor;
               this.registros[id_registro].incidencias = this.registro_actual.incidencias;
               this.registros[id_registro].sintomas = myGlobal.sintomas.value();
               this.registros[id_registro].procedimiento = myGlobal.procedimiento.value();
@@ -1092,6 +1161,7 @@
 
           this.registroHash = this.registro_actual.titulo +
             this.registro_actual.incidencias +
+            this.registro_actual.validadoPor +
             this.registro_actual.etiquetas +
             myGlobal.sintomas.value() +
             myGlobal.procedimiento.value();
@@ -1113,6 +1183,7 @@
           if (this.titulo_ventana === 'Editar documento') {
             if (this.registroHash !== this.registro_actual.titulo +
               this.registro_actual.incidencias +
+              this.registro_actual.validadoPor +
               this.registro_actual.etiquetas +
               myGlobal.sintomas.value() +
               myGlobal.procedimiento.value()
@@ -1126,6 +1197,7 @@
         exitFromInsert() {
           this.registro_actual.titulo = '';
           this.registro_actual.etiquetas = '';
+          this.registro_actual.validadoPor = '';
           this.registro_actual.incidencias = '';
           myGlobal.sintomas.value("");
           myGlobal.procedimiento.value("");
@@ -1170,6 +1242,7 @@
             this.registro_actual.id = this.registros[i].id;
             this.registro_actual.titulo = this.registros[i].titulo;
             this.registro_actual.incidencias = this.registros[i].incidencias;
+            this.registro_actual.validadoPor = this.registros[i].validadoPor;
             this.registro_actual.etiquetas = this.registros[i].etiquetas;
             this.registro_actual.sintomas = this.registros[i].sintomas;
             this.registro_actual.procedimiento = this.registros[i].procedimiento;
@@ -1222,6 +1295,7 @@
             this.registro_actual.id = this.registros[i].id;
             this.registro_actual.titulo = this.registros[i].titulo;
             this.registro_actual.incidencias = this.registros[i].incidencias;
+            this.registro_actual.validadoPor = this.registros[i].validadoPor;
             this.registro_actual.etiquetas = this.registros[i].etiquetas.replace(/#/g, "");
             this.registro_actual.sintomas = this.registros[i].sintomas;
             this.registro_actual.procedimiento = this.registros[i].procedimiento;
@@ -1239,6 +1313,7 @@
 
             this.registroHash = this.registro_actual.titulo +
               this.registro_actual.incidencias +
+              this.registro_actual.validadoPor +
               this.registro_actual.etiquetas +
               myGlobal.sintomas.value() +
               myGlobal.procedimiento.value();
@@ -1267,6 +1342,7 @@
           this.registro_actual.titulo = "";
           this.registro_actual.incidencias = "";
           this.registro_actual.etiquetas = "";
+          this.registro_actual.validadoPor = "Sin validar";
           this.registro_actual.sintomas = "";
           this.registro_actual.procedimiento = "";
           this.titulo_ventana = "Crear documento"
