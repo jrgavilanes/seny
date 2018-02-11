@@ -19,6 +19,10 @@
       }
     }
 
+    .patron_encontrado {
+      background-color: yellow;
+    }
+    
     .tag {
       margin: .2em;
       cursor: pointer;
@@ -171,7 +175,7 @@
                 <a title="Abrir documento" @click="getDocument(registro.id)">[#{{registro.id}}] {{registro.titulo}}</a>
               </p>
               
-              <span title="Está validado" @click="getDocument(registro.id)" v-show="registro.validadoPor!=='Sin validar'" class="card-header-icon" aria-label="more options">
+              <span v-bind:title="'Validado por ' + registro.validadoPor" @click="getDocument(registro.id)" v-show="registro.validadoPor!=='Sin validar'" class="card-header-icon" aria-label="more options">
                 <span class="icon">
                   <i style="color: blue;" class="fa fa-certificate is-size-4" aria-hidden="true"></i>
                 </span>
@@ -550,6 +554,7 @@
         registroHash: '',
         buscador: '',
         usuario: '',
+        vista: [],
         password: '',
         comentario: '',
         url_required: '',
@@ -849,47 +854,56 @@
         }     
         
         this.cleanTags();
+        
+        this.buscar();
 
          
 
       },
-      computed: {
-        vista: function () {
-          //Trabajar más el buscador.
-          if (this.buscador !== '') {
-
-            let busca = this.buscador;
-            busca = busca.toLowerCase().trim().split(" ");
-
-
-            let filtro = _.filter(this.registros, function (o) {
-
-              //return o.titulo.toLowerCase().includes(busca.toLowerCase());
-              //return ''.concat(o.id,o.titulo,o.autor,o.etiquetas,o.incidencias,o.sintomas,o.procedimiento).toLowerCase().includes(busca.toLowerCase());
-
-              let chivato = busca.length;
-
-              for (let i = 0; i < busca.length; i++) {
-
-                if (''.concat('#' + o.id, o.titulo, o.autor, o.etiquetas, o.incidencias, o.sintomas, o.procedimiento).toLowerCase().includes(busca[i])) chivato--;
-
-              }
-
-              return chivato === 0;
-
-
-            });
-
-            return _.orderBy(filtro, ['id'], ['desc']);
-
-          } else {
-
-            return _.orderBy(this.registros, ['id'], ['desc']);
-
-          }
+      watch: {
+        
+        buscador: function() {
+          
+          this.buscar();
+        
         }
+        
+        
       },
+      
       methods: {
+        
+        buscar: _.debounce(function(){
+          
+          let busca = this.buscador.toLowerCase();
+          busca = busca.toLowerCase().trim().split(" ");
+          busca = _.filter(busca, function(o){ return o != '';});
+          busca = _.uniq(busca).slice();
+          
+          let filtro = _.filter(this.registros, function (o) {
+
+            //return o.titulo.toLowerCase().includes(busca.toLowerCase());
+            //return ''.concat(o.id,o.titulo,o.autor,o.etiquetas,o.incidencias,o.sintomas,o.procedimiento).toLowerCase().includes(busca.toLowerCase());
+
+            let chivato = busca.length;
+
+            for (let i = 0; i < busca.length; i++) {
+
+              if (''.concat('#' + o.id, o.titulo, o.autor, o.etiquetas, o.incidencias, o.sintomas, o.procedimiento).toLowerCase().includes(busca[i])) chivato--;
+
+            }
+
+            return chivato === 0;
+
+
+          });
+
+          this.vista = _.orderBy(filtro, ['id'], ['desc']);
+          
+              
+          //console.log(busca);
+          
+        }, 500),
         insertLike(autor, usuario) {
 
           let x = this.registro_actual.id;
@@ -914,7 +928,16 @@
 
           }
 
-        },        
+        },   
+        pintaOcurrencia(texto){
+          
+          //por mejorar
+          
+          let re = new RegExp(this.buscador,"g");
+          
+          console.log(texto.replace(re, "<span class='patron_encontrado'>"+this.buscador+"</span>" ));
+          
+        },
         convertToSlug(text) {
 
           let Text = text.toLowerCase().replace(/[^\w ]+/g, '').replace(/ +/g, '-');
@@ -1320,12 +1343,9 @@
 
           } else {
 
-
             this.errorMessage += '<li>Documento no encontrado</li>';
 
-
           }
-
 
         },
         createDocument() {
